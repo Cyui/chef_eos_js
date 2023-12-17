@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/chef_eos_js/static/css/main.e6c13ad2.css",
-    "main.js": "/chef_eos_js/static/js/main.ceeb5f8d.js",
-    "index.html": "/chef_eos_js/index.html",
-    "main.e6c13ad2.css.map": "/chef_eos_js/static/css/main.e6c13ad2.css.map",
-    "main.ceeb5f8d.js.map": "/chef_eos_js/static/js/main.ceeb5f8d.js.map"
+    "main.css": "/chef_eos_web/static/css/main.e6c13ad2.css",
+    "main.js": "/chef_eos_web/static/js/main.d419247d.js",
+    "index.html": "/chef_eos_web/index.html",
+    "main.e6c13ad2.css.map": "/chef_eos_web/static/css/main.e6c13ad2.css.map",
+    "main.d419247d.js.map": "/chef_eos_web/static/js/main.d419247d.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.ceeb5f8d.js"
+    "static/js/main.d419247d.js"
   ]
 }
