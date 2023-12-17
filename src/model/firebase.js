@@ -24,7 +24,7 @@ export var invoices = [];
 export var lastInvoiceNO = 0;
 
 const auth = getAuth();
-let mail = "";
+export var mail = "";
 
 const invoiceConverter = {
   toFirestore: (invoice) => {

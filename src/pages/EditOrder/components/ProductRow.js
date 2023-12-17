@@ -1,15 +1,18 @@
 import React from "react";
 import { useState, useRef } from "react";
-import Autocomplete from "@mui/material/Autocomplete";
+import Select from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
+import IconButton from "@mui/material/IconButton";
+import DeleteIcon from "@mui/icons-material/Delete";
+import FormControl from '@mui/material/FormControl';
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
 import { CMenu } from "../../../model/chefmenu";
 import { COption, CProduct, COrder } from "../../../model/invoice";
 
 const ProductRow = ({ id, order, setOrders }) => {
-  //console.log(order)
-
   const menu = new CMenu();
 
   const productList = menu.products.map((prod) => prod.name);
@@ -38,9 +41,15 @@ const ProductRow = ({ id, order, setOrders }) => {
     });
   };
 
-  const handleSelectProdNameChange = (_, value) => {
+  const getProductList = () => {
+    return menu.products.map((item) => {
+      return <MenuItem key={item.id} value={item.name}>{item.name}</MenuItem>;
+    });
+  };
+
+  const handleSelectProductChange = (event) => {
     menu.products.forEach((item) => {
-      if (item.name === value) {
+      if (item.name === event.target.value) {
         setProduct(item);
         orderRef.current.product = item;
       }
@@ -51,12 +60,26 @@ const ProductRow = ({ id, order, setOrders }) => {
     setOptions(null);
   };
 
-  const handleSelectOptTagOpen = (_) => {
+  const getOptionList = () => {
+    let optList = [];
+
+    menu.options.forEach((item) => {
+      item.valid.forEach((id) => {
+        if (id === product.id) optList.push(item.option.tag);
+      });
+    });
+
+    return optList.map((item) => {
+      return <MenuItem key={item} value={item}>{item}</MenuItem>;
+    });
+  };
+
+  const handleSelectOptionOpen = (_) => {
     setOptionList(() => {
       let optList = [];
 
       menu.options.forEach((item) => {
-        item.avlid.forEach((id) => {
+        item.valid.forEach((id) => {
           if (id === product.id) optList.push(item.option.tag);
         });
       });
@@ -65,22 +88,26 @@ const ProductRow = ({ id, order, setOrders }) => {
     });
   };
 
-  const handleSelectOptTagChange = (_, value) => {
+  const handleSelectOptionChange = (event) => {
     menu.options.forEach((item) => {
-      if (item.option.tag === value) {
+      if (item.option.tag === event.target.value) {
         setOptions([item.option]);
         orderRef.current.product.options = [item.option];
       }
     });
 
     pushOrder();
-
-    //setOptionValue(value)
   };
 
-  const handleSelQuantityChange = (_, value) => {
-    setQuantity(Number(value));
-    orderRef.current.quantity = Number(value);
+  const getQuantityList = () => {
+    return quantityList.map((item) => {
+      return <MenuItem key={item} value={item}>{item}</MenuItem>;
+    });
+  };
+
+  const handleSelQuantityChange = (event) => {
+    setQuantity(Number(event.target.value));
+    orderRef.current.quantity = Number(event.target.value);
 
     pushOrder();
   };
@@ -94,48 +121,63 @@ const ProductRow = ({ id, order, setOrders }) => {
 
   return (
     <div>
-      <Stack direction="row" spacing={1}>
+      <Stack direction="row" spacing={1}  sx={{ m: 1 }}>
         <div>
-          <Autocomplete
-            sx={{ width: 194 }}
-            options={productList}
-            value={product.name}
-            onChange={handleSelectProdNameChange}
-            renderInput={(params) => <TextField {...params} label="品項" />}
-          />
+          <FormControl>
+            <InputLabel id="label_product">品項</InputLabel>
+            <Select
+              labelId="label_product"
+              id="product_select"
+              sx={{ width: 145 }}
+              defaultValue=""
+              value={product.name}
+              label="品項"
+              onChange={handleSelectProductChange}
+            >
+              {getProductList()}
+            </Select>
+          </FormControl>
         </div>
 
         <div>
-          <Autocomplete
-            sx={{ width: 120 }}
-            options={optionList}
-            getOptionLabel={(option) => option}
-            value={options?.[0]?.tag || null}
-            // defaultValue={ ()=>{
-            //         return (options) ? options[0].tag : null
-            //     }
-            // }
-            onChange={handleSelectOptTagChange}
-            onOpen={handleSelectOptTagOpen}
-            renderInput={(params) => <TextField {...params} label="選項" />}
-          />
+          <FormControl>
+            <InputLabel id="label_option">選項</InputLabel>
+            <Select
+              labelId="label_option"
+              id="option_select"
+              sx={{ width: 95 }}
+              defaultValue=""
+              value={options?.[0]?.tag || ""}
+              label="選項"
+              onChange={handleSelectOptionChange}
+              onOpen={handleSelectOptionOpen}
+            >
+              {getOptionList()}
+            </Select>
+          </FormControl>
         </div>
 
         <div>
-          <Autocomplete
-            sx={{ width: 100 }}
-            options={quantityList}
-            value={quantity.toString()}
-            onChange={handleSelQuantityChange}
-            renderInput={(params) => <TextField {...params} label="數量" />}
-          />
+          <FormControl>
+            <InputLabel id="label_quantity">數量</InputLabel>
+            <Select
+              labelId="label_quantity"
+              id="quantity_select"
+              sx={{ width: 80 }}
+              defaultValue=""
+              value={quantity.toString()}
+              label="數量"
+              onChange={handleSelQuantityChange}
+            >
+              {getQuantityList()}
+            </Select>
+          </FormControl>
         </div>
 
-        {orderRef.current.subtotal}
-        <Button variant="contained" color="primary" onClick={handleDelOrderClick}>
-          {" "}
-          Delete{" "}
-        </Button>
+        {/* {orderRef.current.subtotal} */}
+        <IconButton aria-label="delete" onClick={handleDelOrderClick}>
+          <DeleteIcon />
+        </IconButton>
       </Stack>
     </div>
   );

@@ -1,7 +1,15 @@
 import React from "react";
 import { useState, useRef, useEffect } from "react";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import Stack from "@mui/material/Stack";
+import { blue, red, green } from "@mui/material/colors";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
+import DoneIcon from "@mui/icons-material/Done";
+import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
+import Typography from "@mui/material/Typography";
 import "dayjs/locale/zh-tw";
 import EditInfo from "./components/EditInfo";
 import OrderList from "./components/OrderList";
@@ -15,20 +23,17 @@ import {
 } from "react-router-dom";
 import { CInfo, CInvoice, invoiceFromObject } from "../../model/invoice";
 import * as firabase from "../../model/firebase";
-import Typography from "@mui/material/Typography";
 
 export var serialNo = 0;
 
 const EditOrder = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   //console.log(location.state)
   //console.log(invoiceFromObject(location.state))
 
-  const invoice = useRef(
-    invoiceFromObject(location.state) ||
-      new CInvoice()
-  );
+  const invoice = useRef(invoiceFromObject(location.state) || new CInvoice());
 
   const [info, setInfo] = useState(invoice.current.info);
   const [orders, setOrders] = useState(invoice.current.orders);
@@ -56,7 +61,7 @@ const EditOrder = () => {
     updateInvoice();
 
     if (invoice.current.id === "") {
-      invoice.current.no = firabase.lastInvoiceNO + 1
+      invoice.current.no = firabase.lastInvoiceNO + 1;
       invoice.current.submit();
     }
 
@@ -76,42 +81,91 @@ const EditOrder = () => {
     //console.log(time)
     //console.log(note)
     //console.log(deposit)
+
+    navigate(-1);
   };
 
-  const handleCancelClick = () => {};
+  const handleCancelClick = () => {
+    navigate("/");
+  };
+
+  const handleReturnClick = () => {
+    navigate(-1);
+  };
 
   return (
-    <div>
-      <Typography variant="h6" gutterBottom>
-        {invoice.current.doc}
-      </Typography>
-      <EditInfo setOrders={setOrders} info={info} setInfo={setInfo} />
-      <OrderList orders={orders} setOrders={setOrders} />
-      <TextField
-        id="textDeposit"
-        label="折扣"
-        variant="outlined"
-        fullWidth
-        value={discount}
-        onChange={(e) => setDiscount(Math.abs(Number(e.target.value))*-1 || 0)}
-      />
-      <Typography variant="h5" gutterBottom>
-        Total: {total}
-      </Typography>
-      <Typography variant="h6" gutterBottom>
-        Final Payment: {finalpayment}
-      </Typography>
-      <Link to="../">
-        <Button variant="contained" color="primary" onClick={handleSubmitClick}>
-          {" "}
-          Submit{" "}
-        </Button>
-        <Button variant="contained" color="primary" onClick={handleCancelClick}>
-          {" "}
-          Cancel{" "}
-        </Button>
-      </Link>
-    </div>
+    <Box sx={{ m: 0 }}>
+      <div>
+        <Typography variant="h6" gutterBottom sx={{ m: 1 }}>
+          {invoice.current.doc || "New"}
+        </Typography>
+        <EditInfo setOrders={setOrders} info={info} setInfo={setInfo} />
+        <OrderList orders={orders} setOrders={setOrders} />
+        <TextField
+          sx={{ width: 164, m: 1 }}
+          id="textDeposit"
+          label="折扣"
+          variant="outlined"
+          fullWidth
+          value={discount}
+          onChange={(e) =>
+            setDiscount(Math.abs(Number(e.target.value)) * -1 || 0)
+          }
+        />
+        <Stack direction="row" spacing={1} sx={{ m: 1 }}>
+          <Typography
+            variant="h6"
+            gutterBottom
+            color={blue[500]}
+            sx={{ width: 164 }}
+          >
+            訂單金額: {total}
+          </Typography>
+          <Typography
+            variant="h6"
+            gutterBottom
+            color={red[500]}
+            sx={{ width: 164 }}
+          >
+            餘款: {finalpayment}
+          </Typography>
+        </Stack>
+        <Stack direction="row" spacing={1}>
+          {/* <Link to="../"> */}
+          <div>
+            <IconButton
+              sx={{ m: 1 }}
+              aria-label="return"
+              color="primary"
+              onClick={handleReturnClick}
+            >
+              <KeyboardReturnIcon />
+            </IconButton>
+          </div>
+          <div>
+            <IconButton
+              sx={{ m: 1 }}
+              aria-label="cancel"
+              color="error"
+              onClick={handleCancelClick}
+            >
+              <CloseIcon />
+            </IconButton>
+          </div>
+          <div>
+            <IconButton
+              sx={{ m: 1, mx: 6 }}
+              aria-label="submit"
+              color="success"
+              onClick={handleSubmitClick}
+            >
+              <DoneIcon />
+            </IconButton>
+          </div>
+          {/* </Link> */}
+        </Stack>
+      </div>
+    </Box>
   );
 };
 

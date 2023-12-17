@@ -20,25 +20,27 @@ class CMenu {
       new CProduct("a03178c7-1a85-455f-ae4b-274258c271f2", "廣式肝腸", 200),
       new CProduct("21f05c71-2795-41ed-b5d6-c0d579e1db6d", "廣式臘腸", 200),
       new CProduct("7a014e7c-b56e-4112-845e-a382c169280e", "涼拌海蜇絲", 180),
-      new CProduct("0d0b8290-bdf9-4355-b06a-a21ec1dbaf82", "干貝珍珠丸", 600)
+      new CProduct("0d0b8290-bdf9-4355-b06a-a21ec1dbaf82", "干貝珍珠丸", 600),
+      new CProduct("639e9e70-5b46-40ea-a3ee-9927fffb1473", "五更腸旺", 0),
+      new CProduct("16c6219c-c4a1-42ff-bf85-d167a121a02e", "筍絲", 0)
     ];
 
     this.options = [
       {
         option: new COption("a5b8dfa1-8cc8-4d7a-9c99-6f07be5dce6a", "熱", 0),
-        avlid: ["acb5721f-50de-4af0-8d9c-3b8288d66f80", 
+        valid: ["acb5721f-50de-4af0-8d9c-3b8288d66f80", 
                 "2cc9f007-25a1-4614-841a-d0da640be344"],
       },
 
       {
         option: new COption("a5b7ad6d-11f9-40d8-8935-c54ccde45137", "凍", -50),
-        avlid: ["acb5721f-50de-4af0-8d9c-3b8288d66f80", 
+        valid: ["acb5721f-50de-4af0-8d9c-3b8288d66f80", 
                 "2cc9f007-25a1-4614-841a-d0da640be344"],
       },
 
       {
         option: new COption("c3f6d16d-6194-40b4-aa40-87d3cd62e0ae", "切", 0),
-        avlid: ["d65c30a8-907a-45aa-93ee-f5472344461c",
+        valid: ["d65c30a8-907a-45aa-93ee-f5472344461c",
                 "8bde78c7-69ae-435b-9ecf-49de9fa63ed6",
                 "bf4607f7-85ce-4224-8b18-f6a63cc2c251",
                 "6f3f66ba-62b4-4d5d-b2f8-631772ef89b2",
@@ -48,7 +50,7 @@ class CMenu {
 
       {
         option: new COption("f3330458-7baf-478f-91a2-3f9514d20192", "不切", 0),
-        avlid: ["d65c30a8-907a-45aa-93ee-f5472344461c",
+        valid: ["d65c30a8-907a-45aa-93ee-f5472344461c",
                 "8bde78c7-69ae-435b-9ecf-49de9fa63ed6",
                 "bf4607f7-85ce-4224-8b18-f6a63cc2c251",
                 "6f3f66ba-62b4-4d5d-b2f8-631772ef89b2",

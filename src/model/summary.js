@@ -1,17 +1,10 @@
-class AAA{
-  constructor(name, qty, total) {
-    this.name = name
-    this.qty = qty
-    this.total = total
-  }
-}
-
-
-
-
 class CSummary {
   constructor(invoices = []) {
     this.invoices = invoices;
+  }
+
+  get total() {
+    return this.invoices.reduce((sum, invoice) => sum + invoice.total, 0);
   }
 
   getOrdersDict(orders) {

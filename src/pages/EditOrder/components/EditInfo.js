@@ -3,11 +3,16 @@ import { useState, useRef, useEffect } from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
-import Autocomplete from "@mui/material/Autocomplete";
+import Select from "@mui/material/Select";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import IconButton from "@mui/material/IconButton";
+import AddIcon from "@mui/icons-material/Add";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
 import "dayjs/locale/zh-tw";
 import dayjs from "dayjs";
 import { CInfo, CInvoice, COrder } from "../../../model/invoice";
@@ -30,18 +35,18 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
 
   useEffect(() => {});
 
-  const handleSelStatusChange = (_, value) => {
-    setStatus(value);
+  const handleSelStatusChange = (event) => {
+    setStatus(event.target.value);
     setInfo((info) => {
-      info.status = value;
-      return { ...info, status: value };
+      // info.status = event.target.value;
+      return { ...info, status: event.target.value };
     });
   };
 
-  const handleSelDeliverChange = (_, value) => {
-    setDeliver(value);
+  const handleSelDeliverChange = (event) => {
+    setDeliver(event.target.value);
     setInfo((info) => {
-      return { ...info, deliver: value };
+      return { ...info, deliver: event.target.value };
     });
   };
 
@@ -60,9 +65,10 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
 
   return (
     <div>
-      <Stack direction="row" spacing={1}>
+      <Stack direction="row" spacing={1} sx={{ m: 1 }}>
         <div>
           <TextField
+            sx={{ width: 164 }}
             id="textNo"
             label="編號"
             variant="outlined"
@@ -78,19 +84,32 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
         </div>
 
         <div>
-          <Autocomplete
-            sx={{ width: 194 }}
-            options={statusList}
-            value={status}
-            onChange={handleSelStatusChange}
-            renderInput={(params) => <TextField {...params} label="訂單狀態" />}
-          />
+          <FormControl>
+            <InputLabel id="label_status">訂單狀態</InputLabel>
+            <Select
+              labelId="label_status"
+              id="status_select"
+              sx={{ width: 164 }}
+              value={status}
+              label="訂單狀態"
+              onChange={handleSelStatusChange}
+            >
+              {statusList.map((item) => {
+                return (
+                  <MenuItem key={item} value={item}>
+                    {item}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
         </div>
       </Stack>
 
-      <Stack direction="row" spacing={1}>
+      <Stack direction="row" spacing={1} sx={{ m: 1 }}>
         <div>
           <TextField
+            sx={{ width: 164 }}
             id="textName"
             label="姓名"
             variant="outlined"
@@ -106,6 +125,7 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
         </div>
         <div>
           <TextField
+            sx={{ width: 164 }}
             id="textPhone"
             label="電話"
             variant="outlined"
@@ -121,11 +141,11 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
         </div>
       </Stack>
 
-      <Stack direction="row" spacing={1}>
+      <Stack direction="row" spacing={1} sx={{ m: 1 }}>
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="zh-tw">
           <DatePicker
             label="取貨日期"
-            sx={{ width: 194 }}
+            sx={{ width: 164 }}
             value={date}
             onChange={(value) => {
               setDate(convertToDateString(value));
@@ -136,7 +156,7 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
           />
           <TimePicker
             label="取貨時間"
-            sx={{ width: 194 }}
+            sx={{ width: 164 }}
             value={time}
             onChange={(value) => {
               setTime(convertToTimeString(value));
@@ -148,18 +168,31 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
         </LocalizationProvider>
       </Stack>
 
-      <Stack direction="row" spacing={1}>
+      <Stack direction="row" spacing={1} sx={{ m: 1 }}>
         <div>
-          <Autocomplete
-            sx={{ width: 194 }}
-            options={deliverList}
-            value={deliver}
-            onChange={handleSelDeliverChange}
-            renderInput={(params) => <TextField {...params} label="取貨方式" />}
-          />
+          <FormControl>
+            <InputLabel id="label_deliver">取貨方式</InputLabel>
+            <Select
+              labelId="label_deliver"
+              id="deliver_select"
+              sx={{ width: 164 }}
+              value={deliver}
+              label="取貨方式"
+              onChange={handleSelDeliverChange}
+            >
+              {deliverList.map((item) => {
+                return (
+                  <MenuItem key={item} value={item}>
+                    {item}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
         </div>
         <div>
           <TextField
+            sx={{ width: 164 }}
             id="textDeposit"
             label="訂金"
             variant="outlined"
@@ -175,23 +208,33 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
         </div>
       </Stack>
 
-      <TextField
-        id="textNote"
-        label="備註"
-        variant="outlined"
-        fullWidth
-        value={note}
-        onChange={(e) => {
-          setNote(e.target.value);
-          setInfo((info) => {
-            return { ...info, note: e.target.value };
-          });
-        }}
-      />
+      <Stack direction="row" spacing={1} sx={{ m: 1 }}>
+        <div>
+          <TextField
+            sx={{ width: 336 }}
+            id="textNote"
+            label="備註"
+            variant="outlined"
+            fullWidth
+            value={note}
+            onChange={(e) => {
+              setNote(e.target.value);
+              setInfo((info) => {
+                return { ...info, note: e.target.value };
+              });
+            }}
+          />
+        </div>
+      </Stack>
 
-      <Button variant="contained" color="primary" onClick={handleAddClick}>
-        Add Item
-      </Button>
+      <IconButton
+        sx={{ m: 1 }}
+        aria-label="delete"
+        color="primary"
+        onClick={handleAddClick}
+      >
+        <AddIcon />
+      </IconButton>
     </div>
   );
 };
