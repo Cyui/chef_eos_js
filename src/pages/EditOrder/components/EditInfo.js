@@ -199,9 +199,9 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
             fullWidth
             value={deposit}
             onChange={(e) => {
-              setDeposit(parseInt(e.target.value) || 0);
+              setDeposit(Number(e.target.value) || 0);
               setInfo((info) => {
-                return { ...info, deposit: e.target.value || 0 };
+                return { ...info, deposit: Number(e.target.value) || 0 };
               });
             }}
           />
