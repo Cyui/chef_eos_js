@@ -22,7 +22,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { CInfo, CInvoice, invoiceFromObject } from "../../model/invoice";
-import * as firabase from "../../model/firebase";
+import * as firebase from "../../model/firebase";
 
 export var serialNo = 0;
 
@@ -61,16 +61,16 @@ const EditOrder = () => {
     updateInvoice();
 
     if (invoice.current.id === "") {
-      invoice.current.no = firabase.lastInvoiceNO + 1;
+      invoice.current.no = firebase.lastInvoiceNO + 1;
       invoice.current.submit();
     }
 
     //console.log(invoice.current)
 
     if (invoice.current.doc === "") {
-      firabase.pushInvoiceToFirebase(invoice.current);
+      firebase.pushInvoiceToFirebase(invoice.current);
     } else {
-      firabase.updateInvoiceToFirebase(invoice.current, invoice.current.doc);
+      firebase.updateInvoiceToFirebase(invoice.current, invoice.current.doc);
     }
 
     //let { no, name, phone, date, time, note, deposit } = info
