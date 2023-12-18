@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route, Navigate} from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate} from "react-router-dom";
 import './index.css';
 import Home from './pages/Home'
 import EditOrder from './pages/EditOrder'
@@ -16,7 +16,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 onAuthStateChanged(auth, (user) => {
   root.render(
     <React.StrictMode>
-      <BrowserRouter basename={process.env.PUBLIC_URL}>
+      <HashRouter>
         <Routes>
           {/* <Route path="/" element={<Home />} /> */}
           <Route path="" element={user ? <Home /> : <Navigate to="login" />} />
@@ -26,7 +26,7 @@ onAuthStateChanged(auth, (user) => {
           <Route path="list" element={user ? <InvoiceList /> : <Navigate to="../login" />} />
           <Route path="query" element={user ? <Query /> : <Navigate to="../login" />} />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </React.StrictMode>
   );
 });
