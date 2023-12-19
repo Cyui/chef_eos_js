@@ -1,5 +1,5 @@
 import { app } from "../firebase-config";
-import { getAuth } from "firebase/auth";
+import { getAuth, signOut } from "firebase/auth";
 import {
   getFirestore,
   collection,
@@ -51,6 +51,18 @@ const invoiceConverter = {
 export function getUserInfoFromFirebase() {
   if (auth !== null) {
     mail = auth.currentUser.email;
+  }
+}
+
+export function logOut() {
+  if (auth !== null) {
+    signOut(auth).then(function() {
+      // Sign-out successful.
+      console.log("logout success")
+    }).catch(function(error) {
+      // An error happened.
+      console.log("logout error")
+    });
   }
 }
 

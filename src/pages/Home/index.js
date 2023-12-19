@@ -8,8 +8,11 @@ import AddIcon from "@mui/icons-material/Add";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import ListIcon from "@mui/icons-material/List";
 import SearchIcon from "@mui/icons-material/Search";
+import SettingsIcon from '@mui/icons-material/Settings';
+import LogoutIcon from '@mui/icons-material/Logout';
 import Typography from "@mui/material/Typography";
 import * as firebase from "../../model/firebase";
+import { signOut } from "firebase/auth";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -32,6 +35,15 @@ const Home = () => {
 
   const handleQueryClick = () => {
     navigate("../query");
+  };
+
+  const handleSettingClick = () => {
+    navigate("");
+  };
+
+  const handleLogoutClick = () => {
+    // navigate("");
+    firebase.logOut();
   };
 
   return (
@@ -85,6 +97,28 @@ const Home = () => {
             startIcon={<SearchIcon />}
           >
             查詢
+          </Button>
+          <Button
+            sx={{ py: 2 }}
+            variant="contained"
+            color="primary"
+            size="large"
+            fullWidth
+            onClick={handleSettingClick}
+            startIcon={<SettingsIcon />}
+          >
+            設定
+          </Button>
+          <Button
+            sx={{ py: 2 }}
+            variant="contained"
+            color="primary"
+            size="large"
+            fullWidth
+            onClick={handleLogoutClick}
+            startIcon={<LogoutIcon />}
+          >
+            登出
           </Button>
         </Stack>
       </Box>
