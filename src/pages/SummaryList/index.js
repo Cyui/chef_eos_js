@@ -32,11 +32,12 @@ import { blue, red, green } from "@mui/material/colors";
 import { CInfo, CInvoice, invoiceFromObject } from "../../model/invoice";
 
 const SummaryList = () => {
-  const location = useLocation();
+  //const location = useLocation();
   const navigate = useNavigate();
 
   const summary = new CSummary(
-    location.state.map((obj) => invoiceFromObject(obj))
+    //location.state.map((obj) => invoiceFromObject(obj))
+    firebase.Invoices
   );
   //let rows = createData(summary.report())
   let rows = summary.report();

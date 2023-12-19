@@ -20,11 +20,23 @@ import { invoiceFromObject } from "./invoice";
 // Initialize Cloud Firestore and get a reference to the service
 export const db = getFirestore(app);
 
-export var invoices = [];
-export var lastInvoiceNO = 0;
+export var Invoices = [];
+export var LastInvoiceNO = 0;
 
 const auth = getAuth();
 export var mail = "";
+
+export function setInvoices(invoices) {
+  Invoices = [...invoices]
+}
+
+export function updateInvoices(invoice) {
+  Invoices.forEach((item, index, array) => {
+    if (item.id === invoice.id) {
+      array[index] = invoice;
+    }
+  });
+}
 
 const invoiceConverter = {
   toFirestore: (invoice) => {
@@ -36,7 +48,7 @@ const invoiceConverter = {
   },
 };
 
-export function getUserInfo() {
+export function getUserInfoFromFirebase() {
   if (auth !== null) {
     mail = auth.currentUser.email;
   }
@@ -64,7 +76,8 @@ export async function pullAllInvoiceFromFirebase() {
     invoiceConverter
   );
 
-  const querySnapshot = await getDocs(ref);
+  const q = query(ref, orderBy("no", "desc"));
+  const querySnapshot = await getDocs(q);
   querySnapshot.forEach((doc) => {
     // doc.data() is never undefined for query doc snapshots
     //console.log(doc.id, " => ", doc.data());
@@ -73,8 +86,8 @@ export async function pullAllInvoiceFromFirebase() {
     docs = [...docs, invoice];
   });
 
-  invoices = docs;
-  //console.log(invoices)
+  Invoices = docs;
+  //console.log(Invoices)
 }
 
 // export async function queryInvoiceBySnFromFirebase(sn) {
@@ -108,6 +121,6 @@ export async function getLastInvoiceFromFirebase() {
     no = doc.data().no;
   });
 
-  lastInvoiceNO = no;
-  //console.log(lastInvoiceNO)
+  LastInvoiceNO = no;
+  //console.log(LastInvoiceNO)
 }

@@ -57,7 +57,7 @@ const QueryInput = () => {
   };
 
   const getFilterResult = () => {
-    let result = [...firebase.invoices];
+    let result = [...firebase.Invoices];
 
     if (sn) {
       result = result.filter((item) => item.info.sn.includes(sn));
@@ -110,7 +110,7 @@ const QueryInput = () => {
       });
     }
 
-    return result;
+    return firebase.setInvoices(result);
   };
 
   const handleQuerySummaryClick = () => {

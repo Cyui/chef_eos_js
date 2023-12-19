@@ -33,7 +33,11 @@ const EditOrder = () => {
   //console.log(location.state)
   //console.log(invoiceFromObject(location.state))
 
-  const invoice = useRef(invoiceFromObject(location.state) || new CInvoice());
+  //const invoice = useRef(invoiceFromObject(location.state) || new CInvoice());
+  const invoice = useRef(
+    firebase.Invoices.find((item) => item.id === location.state) ||
+      new CInvoice()
+  );
 
   const [info, setInfo] = useState(invoice.current.info);
   const [orders, setOrders] = useState(invoice.current.orders);
@@ -61,7 +65,7 @@ const EditOrder = () => {
     updateInvoice();
 
     if (invoice.current.id === "") {
-      invoice.current.no = firebase.lastInvoiceNO + 1;
+      invoice.current.no = firebase.LastInvoiceNO + 1;
       invoice.current.submit();
     }
 
@@ -71,6 +75,7 @@ const EditOrder = () => {
       firebase.pushInvoiceToFirebase(invoice.current);
     } else {
       firebase.updateInvoiceToFirebase(invoice.current, invoice.current.doc);
+      firebase.updateInvoices(invoice.current);
     }
 
     //let { no, name, phone, date, time, note, deposit } = info

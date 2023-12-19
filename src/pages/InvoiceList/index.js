@@ -35,15 +35,20 @@ import Home from "../Home";
 import { CInvoice, invoiceFromObject } from "../../model/invoice";
 
 export default function InvoiceList() {
-  const location = useLocation();
+  //const location = useLocation();
   const navigate = useNavigate();
 
   const [dense, setDense] = React.useState(false);
   const [secondary, setSecondary] = React.useState(true);
 
   const [invoices, setInvoices] = useState(
-    location.state.map((obj) => invoiceFromObject(obj))
+    //location.state.map((obj) => invoiceFromObject(obj))
+    firebase.Invoices
   );
+
+  useEffect(() => {
+    setInvoices([...invoices])
+  }, []);
 
   return (
     <Box sx={{ flexGrow: 1, maxWidth: 752, m: 1 }}>
@@ -72,7 +77,7 @@ export default function InvoiceList() {
                 key={value.id}
                 onClick={() => {
                   //console.log(value)
-                  navigate("../edit", { state: value });
+                  navigate("../edit", { state: value.id });
                 }}
               >
                 {/* <ListItemAvatar>

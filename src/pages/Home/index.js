@@ -14,7 +14,7 @@ import * as firebase from "../../model/firebase";
 const Home = () => {
   const navigate = useNavigate();
 
-  firebase.getUserInfo();
+  firebase.getUserInfoFromFirebase();
   firebase.pullAllInvoiceFromFirebase();
   firebase.getLastInvoiceFromFirebase();
 
@@ -23,11 +23,11 @@ const Home = () => {
   };
 
   const handleSummaryClick = () => {
-    navigate("../summary", { state: firebase.invoices });
+    navigate("../summary", { state: firebase.Invoices });
   };
 
   const handleListClick = () => {
-    navigate("../list", { state: firebase.invoices });
+    navigate("../list", { state: firebase.Invoices });
   };
 
   const handleQueryClick = () => {
