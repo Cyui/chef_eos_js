@@ -135,7 +135,7 @@ const EditOrder = () => {
             餘款: {finalpayment}
           </Typography>
         </Stack>
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" spacing={1} sx={{ mb: 10 }}>
           {/* <Link to="../"> */}
           <div>
             <IconButton

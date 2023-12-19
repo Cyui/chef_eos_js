@@ -14,11 +14,13 @@ import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import Grid from "@mui/material/Grid";
+import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import FolderIcon from "@mui/icons-material/Folder";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Button from "@mui/material/Button";
 import CloseIcon from "@mui/icons-material/Close";
+import ArticleIcon from '@mui/icons-material/Article';
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import DoneIcon from "@mui/icons-material/Done";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -47,11 +49,11 @@ export default function InvoiceList() {
   );
 
   useEffect(() => {
-    setInvoices([...invoices])
+    setInvoices([...invoices]);
   }, []);
 
   return (
-    <Box sx={{ flexGrow: 1, maxWidth: 752, m: 1 }}>
+    <Box sx={{ flexGrow: 1, maxWidth: 752, m: 0 }}>
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
           <List dense={dense}>
@@ -80,13 +82,13 @@ export default function InvoiceList() {
                   navigate("../edit", { state: value.id });
                 }}
               >
-                {/* <ListItemAvatar>
-                    <Avatar>
-                      <FolderIcon />
-                    </Avatar>
-                  </ListItemAvatar> */}
+                <ListItemAvatar>
+                  <Avatar>
+                    <ArticleIcon />
+                  </Avatar>
+                </ListItemAvatar>
                 <ListItemText
-                  primary={`[${value.info.sn}], ${value.info.name}, ${value.info.phone}, <${value.info.status}>`}
+                  primary={`[${value.info.sn}] ${value.info.name} ${value.info.phone} <${value.info.status}>`}
                   secondary={secondary ? `${value.info.note}` : null}
                 />
               </ListItem>
@@ -95,29 +97,31 @@ export default function InvoiceList() {
         </Grid>
       </Grid>
 
-      {/* <Link to="../"> */}
-      <IconButton
-        sx={{ m: 1 }}
-        aria-label="return"
-        color="primary"
-        onClick={() => {
-          navigate(-1);
-        }}
-      >
-        <KeyboardReturnIcon />
-      </IconButton>
+      <Stack direction="row" spacing={1} sx={{ m: 1, mb: 10 }}>
+        {/* <Link to="../"> */}
+        <IconButton
+          sx={{ m: 1 }}
+          aria-label="return"
+          color="primary"
+          onClick={() => {
+            navigate(-1);
+          }}
+        >
+          <KeyboardReturnIcon />
+        </IconButton>
 
-      <IconButton
-        sx={{ m: 1 }}
-        aria-label="cancel"
-        color="error"
-        onClick={() => {
-          navigate("/");
-        }}
-      >
-        <CloseIcon />
-      </IconButton>
-      {/* </Link> */}
+        <IconButton
+          sx={{ m: 1 }}
+          aria-label="cancel"
+          color="error"
+          onClick={() => {
+            navigate("/");
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        {/* </Link> */}
+      </Stack>
     </Box>
   );
 }

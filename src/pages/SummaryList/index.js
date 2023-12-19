@@ -28,6 +28,7 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import Typography from "@mui/material/Typography";
+import Stack from "@mui/material/Stack";
 import { blue, red, green } from "@mui/material/colors";
 import { CInfo, CInvoice, invoiceFromObject } from "../../model/invoice";
 
@@ -80,30 +81,31 @@ const SummaryList = () => {
       {/* <Link to="../">
         <Button variant="contained" color="primary" onClick={() => {}}>Cancel</Button>
       </Link> */}
-      {/* <Link to="../"> */}
+      <Stack direction="row" spacing={1} sx={{ m: 1, mb: 10 }}>
+        {/* <Link to="../"> */}
+        <IconButton
+          sx={{ m: 1 }}
+          aria-label="return"
+          color="primary"
+          onClick={() => {
+            navigate(-1);
+          }}
+        >
+          <KeyboardReturnIcon />
+        </IconButton>
 
-      <IconButton
-        sx={{ m: 1 }}
-        aria-label="return"
-        color="primary"
-        onClick={() => {
-          navigate(-1);
-        }}
-      >
-        <KeyboardReturnIcon />
-      </IconButton>
-
-      <IconButton
-        sx={{ m: 1 }}
-        aria-label="cancel"
-        color="error"
-        onClick={() => {
-          navigate("/");
-        }}
-      >
-        <CloseIcon />
-      </IconButton>
-      {/* </Link> */}
+        <IconButton
+          sx={{ m: 1 }}
+          aria-label="cancel"
+          color="error"
+          onClick={() => {
+            navigate("/");
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        {/* </Link> */}
+      </Stack>
     </div>
   );
 };
