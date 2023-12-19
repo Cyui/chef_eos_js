@@ -33,7 +33,7 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
   const [deliver, setDeliver] = useState(info.deliver || "自取");
   const [status, setStatus] = useState(info.status || "待處理");
 
-  useEffect(() => {});
+  useEffect(() => {}, []);
 
   const handleSelStatusChange = (event) => {
     setStatus(event.target.value);

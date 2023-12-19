@@ -42,7 +42,9 @@ const QueryInput = () => {
   const [deliver, setDeliver] = useState("");
   const [status, setStatus] = useState("");
 
-  useEffect(() => {});
+  useEffect(() => {
+    firebase.pullAllInvoiceFromFirebase();
+  }, []);
 
   const handleSelStatusChange = (event) => {
     setStatus(event.target.value);
