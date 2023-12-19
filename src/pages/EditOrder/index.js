@@ -50,7 +50,7 @@ const EditOrder = () => {
 
   useEffect(() => {
     updateInvoice();
-  }, []);
+  });
 
   const updateInvoice = () => {
     invoice.current.info = info;
