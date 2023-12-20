@@ -75,6 +75,13 @@ export async function pushInvoiceToFirebase(invoice) {
   await updateDoc(doc(ref, docref.id), { doc: docref.id });
 }
 
+export async function pushMenuToFirebase(menu) {
+  // const ref = doc(collection(db, mail, "eos_invioces", "2024y"))
+  const ref = collection(db, mail, "eos_menu", "2024y");
+
+  const docref = await addDoc(ref, JSON.parse(JSON.stringify(menu)));
+}
+
 export async function updateInvoiceToFirebase(invoice, docid) {
   const ref = doc(db, mail, "eos_invioces", "2024y", docid);
 

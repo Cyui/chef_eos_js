@@ -38,11 +38,10 @@ const Home = () => {
   };
 
   const handleSettingClick = () => {
-    navigate("");
+    navigate("../setting");
   };
 
   const handleLogoutClick = () => {
-    // navigate("");
     firebase.logOut();
   };
 
