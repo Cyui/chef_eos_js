@@ -229,7 +229,7 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
 
       <IconButton
         sx={{ m: 1 }}
-        aria-label="delete"
+        aria-label="add"
         color="primary"
         onClick={handleAddClick}
       >

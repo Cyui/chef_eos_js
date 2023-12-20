@@ -5,6 +5,7 @@ import {
   collection,
   doc,
   setDoc,
+  getDoc,
   getDocs,
   query,
   orderBy,
@@ -16,18 +17,20 @@ import {
   FieldPath,
 } from "firebase/firestore";
 import { invoiceFromObject } from "./invoice";
+import { CMenu, menuFromObject } from "./chefmenu";
 
 // Initialize Cloud Firestore and get a reference to the service
 export const db = getFirestore(app);
 
 export var Invoices = [];
 export var LastInvoiceNO = 0;
+export var Menu = new CMenu();
 
 const auth = getAuth();
 export var mail = "";
 
 export function setInvoices(invoices) {
-  Invoices = [...invoices]
+  Invoices = [...invoices];
 }
 
 export function updateInvoices(invoice) {
@@ -48,6 +51,16 @@ const invoiceConverter = {
   },
 };
 
+const menuConverter = {
+  toFirestore: (menu) => {
+    return menu;
+  },
+  fromFirestore: (snapshot, options) => {
+    const data = snapshot.data(options);
+    return menuFromObject(data);
+  },
+};
+
 export function getUserInfoFromFirebase() {
   if (auth !== null) {
     mail = auth.currentUser.email;
@@ -56,13 +69,15 @@ export function getUserInfoFromFirebase() {
 
 export function logOut() {
   if (auth !== null) {
-    signOut(auth).then(function() {
-      // Sign-out successful.
-      console.log("logout success")
-    }).catch(function(error) {
-      // An error happened.
-      console.log("logout error")
-    });
+    signOut(auth)
+      .then(function () {
+        // Sign-out successful.
+        console.log("logout success");
+      })
+      .catch(function (error) {
+        // An error happened.
+        console.log("logout error");
+      });
   }
 }
 
@@ -76,10 +91,10 @@ export async function pushInvoiceToFirebase(invoice) {
 }
 
 export async function pushMenuToFirebase(menu) {
-  // const ref = doc(collection(db, mail, "eos_invioces", "2024y"))
-  const ref = collection(db, mail, "eos_menu", "2024y");
+  const ref = doc(db, mail, "eos_menu", "2024y", "current");
+  //const ref = collection(db, mail, "eos_menu", "2024y");
 
-  const docref = await addDoc(ref, JSON.parse(JSON.stringify(menu)));
+  const docref = await setDoc(ref, JSON.parse(JSON.stringify(menu)));
 }
 
 export async function updateInvoiceToFirebase(invoice, docid) {
@@ -89,7 +104,7 @@ export async function updateInvoiceToFirebase(invoice, docid) {
 }
 
 export async function pullAllInvoiceFromFirebase() {
-  let docs = [];
+  let invoices = [];
 
   const ref = collection(db, mail, "eos_invioces", "2024y").withConverter(
     invoiceConverter
@@ -102,11 +117,30 @@ export async function pullAllInvoiceFromFirebase() {
     //console.log(doc.id, " => ", doc.data());
     let invoice = doc.data();
     invoice.doc = doc.id;
-    docs = [...docs, invoice];
+    invoices = [...invoices, invoice];
   });
 
-  Invoices = docs;
-  //console.log(Invoices)
+  Invoices = invoices;
+}
+
+export async function pullMenuFromFirebase() {
+  let menu = new CMenu();
+
+  const ref = doc(db, mail, "eos_menu", "2024y", "current").withConverter(
+    menuConverter
+  );
+
+  const docSnap = await getDoc(ref);
+  if (docSnap.exists()) {
+    // Convert to City object
+    menu = docSnap.data();
+    // Use a City instance method
+    //console.log(doc);
+  } else {
+    console.log("No such document!");
+  }
+
+  Menu = menu;
 }
 
 // export async function queryInvoiceBySnFromFirebase(sn) {

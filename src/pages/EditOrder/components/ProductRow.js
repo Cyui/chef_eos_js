@@ -11,13 +11,13 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import { CMenu } from "../../../model/chefmenu";
 import { COption, CProduct, COrder } from "../../../model/invoice";
+import * as firebase from "../../../model/firebase";
 
 const ProductRow = ({ id, order, setOrders }) => {
-  const menu = new CMenu();
+  const menu = firebase.Menu;
 
-  const productList = menu.products.map((prod) => prod.name);
   const quantityList = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
-  const [optionList, setOptionList] = useState([]);
+  // const [optionList, setOptionList] = useState([]);
 
   const [product, setProduct] = useState(order.product || null);
   const [options, setOptions] = useState(order.product.options || null);
@@ -74,19 +74,19 @@ const ProductRow = ({ id, order, setOrders }) => {
     });
   };
 
-  const handleSelectOptionOpen = (_) => {
-    setOptionList(() => {
-      let optList = [];
+  // const handleSelectOptionOpen = (_) => {
+  //   setOptionList(() => {
+  //     let optList = [];
 
-      menu.options.forEach((item) => {
-        item.valid.forEach((id) => {
-          if (id === product.id) optList.push(item.option.tag);
-        });
-      });
+  //     menu.options.forEach((item) => {
+  //       item.valid.forEach((id) => {
+  //         if (id === product.id) optList.push(item.option.tag);
+  //       });
+  //     });
 
-      return optList;
-    });
-  };
+  //     return optList;
+  //   });
+  // };
 
   const handleSelectOptionChange = (event) => {
     menu.options.forEach((item) => {
@@ -150,7 +150,7 @@ const ProductRow = ({ id, order, setOrders }) => {
               value={options?.[0]?.tag || ""}
               label="選項"
               onChange={handleSelectOptionChange}
-              onOpen={handleSelectOptionOpen}
+              // onOpen={handleSelectOptionOpen}
             >
               {getOptionList()}
             </Select>

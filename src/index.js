@@ -8,6 +8,7 @@ import SummaryList from './pages/SummaryList'
 import InvoiceList from './pages/InvoiceList'
 import Query from './pages/Query'
 import SettingMenu from "./pages/SettingMenu"
+import EditMenu from "./pages/EditMenu"
 import { Login } from "./pages/Login";
 import { getAuth, onAuthStateChanged} from "firebase/auth";
 
@@ -27,6 +28,7 @@ onAuthStateChanged(auth, (user) => {
           <Route path="list" element={user ? <InvoiceList /> : <Navigate to="../login" />} />
           <Route path="query" element={user ? <Query /> : <Navigate to="../login" />} />
           <Route path="setting" element={user ? <SettingMenu /> : <Navigate to="../login" />} />
+          <Route path="setting/menu" element={user ? <EditMenu /> : <Navigate to="../login" />} />
         </Routes>
       </HashRouter>
     </React.StrictMode>

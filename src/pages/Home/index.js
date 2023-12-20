@@ -20,6 +20,7 @@ const Home = () => {
   firebase.getUserInfoFromFirebase();
   firebase.pullAllInvoiceFromFirebase();
   firebase.getLastInvoiceFromFirebase();
+  firebase.pullMenuFromFirebase();
 
   const handleNewClick = () => {
     navigate("../edit");

@@ -5,19 +5,31 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import MenuIcon from '@mui/icons-material/Menu';
+import IconButton from "@mui/material/IconButton";
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
+import CloseIcon from "@mui/icons-material/Close";
+import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import Typography from "@mui/material/Typography";
 import * as firebase from "../../model/firebase";
+import {CMenu} from "../../model/chefmenu"
 
 const SettingMenu = () => {
   const navigate = useNavigate();
 
   const handleSetMenuProductslick = () => {
-    navigate("");
+    navigate("./menu");
   };
 
   const handleSetMenuOptionsClick = () => {
     navigate("");
+  };
+
+  const handleCancelClick = () => {
+    navigate("/");
+  };
+
+  const handleReturnClick = () => {
+    navigate(-1);
   };
 
   return (
@@ -54,12 +66,44 @@ const SettingMenu = () => {
             fullWidth
             onClick={()=>{
               console.log("Test")
+
+
+
+
+
+
+
             }}
-            
           >
             測試
           </Button>
         </Stack>
+
+        <Stack direction="row" spacing={1} sx={{ mb: 10 }}>
+          {/* <Link to="../"> */}
+          <div>
+            <IconButton
+              sx={{ m: 1 }}
+              aria-label="return"
+              color="primary"
+              onClick={handleReturnClick}
+            >
+              <KeyboardReturnIcon />
+            </IconButton>
+          </div>
+          <div>
+            <IconButton
+              sx={{ m: 1 }}
+              aria-label="cancel"
+              color="error"
+              onClick={handleCancelClick}
+            >
+              <CloseIcon />
+            </IconButton>
+          </div>
+          {/* </Link> */}
+        </Stack>
+
       </Box>
     </div>
   );
