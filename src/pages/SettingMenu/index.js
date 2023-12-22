@@ -21,7 +21,7 @@ const SettingMenu = () => {
   };
 
   const handleSetMenuOptionsClick = () => {
-    navigate("");
+    navigate("./options");
   };
 
   const handleCancelClick = () => {
