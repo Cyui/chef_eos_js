@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { useState, useRef, useEffect } from "react";
 import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -20,10 +20,15 @@ import FolderIcon from "@mui/icons-material/Folder";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Button from "@mui/material/Button";
 import CloseIcon from "@mui/icons-material/Close";
-import ArticleIcon from '@mui/icons-material/Article';
+import ArticleIcon from "@mui/icons-material/Article";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import DoneIcon from "@mui/icons-material/Done";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 import * as firebase from "../../model/firebase";
 import {
   Routes,
@@ -40,8 +45,11 @@ export default function InvoiceList() {
   //const location = useLocation();
   const navigate = useNavigate();
 
-  const [dense, setDense] = React.useState(false);
-  const [secondary, setSecondary] = React.useState(true);
+  const [dense, setDense] = useState(false);
+  const [secondary, setSecondary] = useState(true);
+
+  const [open, setOpen] = useState(false);
+  const invoice = useRef(new CInvoice());
 
   const [invoices, setInvoices] = useState(
     //location.state.map((obj) => invoiceFromObject(obj))
@@ -51,6 +59,24 @@ export default function InvoiceList() {
   useEffect(() => {
     setInvoices([...invoices]);
   }, []);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleOK = () => {
+    setInvoices((items) => {
+      return items.filter((item) => item.doc !== invoice.current.doc);
+    });
+
+    firebase.deleteInvoiceFromFirebase(invoice.current.doc);
+
+    setOpen(false);
+  };
 
   return (
     <Box sx={{ flexGrow: 1, maxWidth: 752, m: 0 }}>
@@ -66,11 +92,14 @@ export default function InvoiceList() {
                     onClick={(e) => {
                       e.stopPropagation();
 
-                      setInvoices((items) => {
-                        return items.filter((item) => item.doc !== value.doc);
-                      });
+                      handleClickOpen();
+                      invoice.current = value;
 
-                      firebase.deleteInvoiceFromFirebase(value.doc);
+                      // setInvoices((items) => {
+                      //   return items.filter((item) => item.doc !== value.doc);
+                      // });
+
+                      // firebase.deleteInvoiceFromFirebase(value.doc);
                     }}
                   >
                     <DeleteIcon />
@@ -94,6 +123,27 @@ export default function InvoiceList() {
               </ListItem>
             ))}
           </List>
+          <Dialog
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">
+              {`確定刪除此筆訂單？`}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                {`[${invoice.current.info.sn}] ${invoice.current.info.name} ${invoice.current.info.phone}`}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose}>取消</Button>
+              <Button onClick={handleOK} autoFocus>
+                確定
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Grid>
       </Grid>
 
