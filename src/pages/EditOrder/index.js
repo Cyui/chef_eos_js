@@ -108,7 +108,7 @@ const EditOrder = () => {
         <OrderList orders={orders} setOrders={setOrders} />
         <TextField
           sx={{ width: 164, m: 1 }}
-          id="textDeposit"
+          id="textDiscount"
           label="折扣"
           variant="outlined"
           fullWidth
