@@ -15,32 +15,31 @@ const ValidList = ({ optionValid, setOptionValid }) => {
   return (
     <div>
       {optionValid.map((vid) => {
-        return <ValidRow key={vid} id={vid} setOptionValid={setOptionValid} />;
+        return (
+          <ValidRow
+            key={vid}
+            id={vid}
+            optionValid={optionValid}
+            setOptionValid={setOptionValid}
+          />
+        );
       })}
     </div>
   );
 };
 
-const ValidRow = ({ id, setOptionValid }) => {
+const ValidRow = ({ id, optionValid, setOptionValid }) => {
   const menu = firebase.Menu;
 
   const [idName, setIdName, idNameRef] = useState(
     firebase.Menu.products.find((product) => product.id === id)?.name || null
   );
 
-  const getValidList = () => {
-    let validList = menu.products.map((item) => {
-      return item.name;
-    });
-
-    return validList.map((item) => {
-      return (
-        <MenuItem key={item} value={item}>
-          {item}
-        </MenuItem>
-      );
-    });
-  };
+  const [validNameList, setValidNameList, validNameListRef] = useState(
+    menu.products.map((item) => {
+      return { id: item.id, name: item.name };
+    }) || []
+  );
 
   const handleSelectValidChange = (event) => {
     setIdName(event.target.value);
@@ -67,11 +66,24 @@ const ValidRow = ({ id, setOptionValid }) => {
             id="option_select"
             sx={{ width: 232 }}
             defaultValue=""
-            value={idName}
+            value={idName || ""}
             label="可用"
             onChange={handleSelectValidChange}
+            onOpen={() => {
+              setValidNameList(
+                validNameList.filter((item) => {
+                  return !optionValid.includes(item.id) || (item.name === idName);
+                })
+              );
+            }}
           >
-            {getValidList()}
+            {validNameList.map((item) => {
+              return (
+                <MenuItem key={item.id} value={item.name}>
+                  {item.name}
+                </MenuItem>
+              );
+            })}
           </Select>
         </FormControl>
         <IconButton
