@@ -50,7 +50,7 @@ const Home = () => {
     <div>
       <Box sx={{ width: "100%" }}>
         <Typography variant="h6" gutterBottom sx={{ m: 1 }}>
-          {firebase.mail}
+          {firebase.Mail}
         </Typography>
 
         <Stack spacing={4} sx={{ mx: 8, my: 4 }}>

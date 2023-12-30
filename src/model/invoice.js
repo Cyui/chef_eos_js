@@ -22,7 +22,7 @@ class CProduct {
   }
 
   get finalprice() {
-    if (this.options !== undefined) {
+    if (this.options) {
       return this.options.reduce(
         (sum, option) => sum + option.diff,
         this.price
@@ -33,7 +33,7 @@ class CProduct {
   }
 
   get fullname() {
-    if (this.options !== undefined) {
+    if (this.options) {
       return this.options.reduce(
         (sum, option) => sum + `[${option.tag}]`,
         this.name
@@ -120,7 +120,7 @@ class CInvoice {
     });
 
     if (found === false) {
-      this.orders.push(new COrder(product, quantity));
+      this.orders.push(new COrder(v4(), product, quantity));
     }
   }
 

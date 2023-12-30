@@ -3,12 +3,12 @@ import ProductRow from "./ProductRow";
 const OrderList = ({ orders, setOrders }) => {
   return (
     <div>
-      {orders.map((order) => {
+      {orders.map((item) => {
         return (
           <ProductRow
-            key={order.id}
-            id={order.id}
-            order={order}
+            key={item.id}
+            id={item.id}
+            order={item}
             setOrders={setOrders}
           />
         );

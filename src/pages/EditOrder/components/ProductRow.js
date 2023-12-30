@@ -1,5 +1,6 @@
 import React from "react";
-import { useState, useRef } from "react";
+import { useRef } from "react";
+import useState from "react-usestateref";
 import Select from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
@@ -19,21 +20,26 @@ const ProductRow = ({ id, order, setOrders }) => {
   const quantityList = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
   // const [optionList, setOptionList] = useState([]);
 
-  const [product, setProduct] = useState(order.product || null);
-  const [options, setOptions] = useState(order.product.options || null);
-  const [quantity, setQuantity] = useState(order.quantity || 1);
-  const orderRef = useRef(order);
+  const [product, setProduct, productRef] = useState(order.product || null);
+  const [options, setOptions, optionsRef] = useState(order.product.options || null);
+  const [quantity, setQuantity, quantityRef] = useState(order.quantity || 1);
+  //const orderRef = useRef(order);
 
   const pushOrder = () => {
     setOrders((orders) => {
       return orders.map((item) => {
+        
         if (item.id === id) {
-          //item = orderRef.current //must COrder id equ
-          // order.product = product
-          // order.product.options = options
-          // order.product.quantity = quantity
+          // item = orderRef.current //must COrder id equ
 
-          item = orderRef.current; //must COrder id equ
+          item.product = new CProduct(
+            productRef.current.id,
+            productRef.current.name,
+            productRef.current.price,
+            optionsRef.current
+          );
+
+          item.quantity = quantityRef.current;
         }
 
         return item;
@@ -48,12 +54,12 @@ const ProductRow = ({ id, order, setOrders }) => {
   };
 
   const handleSelectProductChange = (event) => {
-    menu.products.forEach((item) => {
-      if (item.name === event.target.value) {
-        setProduct(item);
-        orderRef.current.product = item;
-      }
-    });
+    let prod = menu.products.find((item) => 
+      item.name === event.target.value
+    );
+
+    setProduct(prod);
+    //orderRef.current.product = prod;
 
     pushOrder();
 
@@ -89,12 +95,11 @@ const ProductRow = ({ id, order, setOrders }) => {
   // };
 
   const handleSelectOptionChange = (event) => {
-    menu.options.forEach((item) => {
-      if (item.option.tag === event.target.value) {
-        setOptions([item.option]);
-        orderRef.current.product.options = [item.option];
-      }
-    });
+    let optionSet = menu.options.find(
+      (item) => item.option.tag === event.target.value
+    );
+
+    setOptions([optionSet.option]);
 
     pushOrder();
   };
@@ -107,7 +112,7 @@ const ProductRow = ({ id, order, setOrders }) => {
 
   const handleSelQuantityChange = (event) => {
     setQuantity(Number(event.target.value));
-    orderRef.current.quantity = Number(event.target.value);
+    //orderRef.current.quantity = Number(event.target.value);
 
     pushOrder();
   };

@@ -27,7 +27,7 @@ export var LastInvoiceNO = 0;
 export var Menu = new CMenu();
 
 const auth = getAuth();
-export var mail = "";
+export var Mail = "";
 
 export function setInvoices(invoices) {
   Invoices = [...invoices];
@@ -63,7 +63,7 @@ const menuConverter = {
 
 export function getUserInfoFromFirebase() {
   if (auth !== null) {
-    mail = auth.currentUser.email;
+    Mail = auth.currentUser.email;
   }
 }
 
@@ -82,8 +82,8 @@ export function logOut() {
 }
 
 export async function pushInvoiceToFirebase(invoice) {
-  // const ref = doc(collection(db, mail, "eos_invioces", "2024y"))
-  const ref = collection(db, mail, "eos_invioces", "2024y");
+  // const ref = doc(collection(db, Mail, "eos_invioces", "2024y"))
+  const ref = collection(db, Mail, "eos_invioces", "2024y");
 
   const docref = await addDoc(ref, JSON.parse(JSON.stringify(invoice)));
 
@@ -91,14 +91,14 @@ export async function pushInvoiceToFirebase(invoice) {
 }
 
 export async function pushMenuToFirebase(menu) {
-  const ref = doc(db, mail, "eos_menu", "2024y", "current");
-  //const ref = collection(db, mail, "eos_menu", "2024y");
+  const ref = doc(db, Mail, "eos_menu", "2024y", "current");
+  //const ref = collection(db, Mail, "eos_menu", "2024y");
 
   const docref = await setDoc(ref, JSON.parse(JSON.stringify(menu)));
 }
 
 export async function updateInvoiceToFirebase(invoice, docid) {
-  const ref = doc(db, mail, "eos_invioces", "2024y", docid);
+  const ref = doc(db, Mail, "eos_invioces", "2024y", docid);
 
   await updateDoc(ref, JSON.parse(JSON.stringify(invoice)));
 }
@@ -106,7 +106,7 @@ export async function updateInvoiceToFirebase(invoice, docid) {
 export async function pullAllInvoiceFromFirebase() {
   let invoices = [];
 
-  const ref = collection(db, mail, "eos_invioces", "2024y").withConverter(
+  const ref = collection(db, Mail, "eos_invioces", "2024y").withConverter(
     invoiceConverter
   );
 
@@ -126,7 +126,7 @@ export async function pullAllInvoiceFromFirebase() {
 export async function pullMenuFromFirebase() {
   let menu = new CMenu();
 
-  const ref = doc(db, mail, "eos_menu", "2024y", "current").withConverter(
+  const ref = doc(db, Mail, "eos_menu", "2024y", "current").withConverter(
     menuConverter
   );
 
@@ -145,7 +145,7 @@ export async function pullMenuFromFirebase() {
 
 // export async function queryInvoiceBySnFromFirebase(sn) {
 
-//   const ref = collection(db, mail, "eos_invioces", "2024y").withConverter(invoiceConverter);
+//   const ref = collection(db, Mail, "eos_invioces", "2024y").withConverter(invoiceConverter);
 
 //   const q = query(ref, where(new FieldPath('info', 'sn'), '==', sn))
 
@@ -157,7 +157,7 @@ export async function pullMenuFromFirebase() {
 // }
 
 export async function deleteInvoiceFromFirebase(docid) {
-  const ref = doc(db, mail, "eos_invioces", "2024y", docid);
+  const ref = doc(db, Mail, "eos_invioces", "2024y", docid);
 
   await deleteDoc(ref);
 }
@@ -165,7 +165,7 @@ export async function deleteInvoiceFromFirebase(docid) {
 export async function getLastInvoiceFromFirebase() {
   let no = 0;
 
-  const ref = collection(db, mail, "eos_invioces", "2024y");
+  const ref = collection(db, Mail, "eos_invioces", "2024y");
   const q = query(ref, orderBy("no", "desc"), limit(1));
   const querySnapshot = await getDocs(q);
   querySnapshot.forEach((doc) => {

@@ -75,7 +75,7 @@ const menuFromObject = (obj) => {
         element.option.tag,
         element.option.diff
       ),
-      valid: (obj.options.valid = element.valid),
+      valid: element.valid,
     };
   });
 
