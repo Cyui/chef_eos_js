@@ -1,17 +1,14 @@
-import React from "react";
+import * as React from "react";
 import ReactDOM from "react-dom/client";
 import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
-import MenuIcon from '@mui/icons-material/Menu';
+import MenuIcon from "@mui/icons-material/Menu";
 import IconButton from "@mui/material/IconButton";
-import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
+import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
 import CloseIcon from "@mui/icons-material/Close";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
-import Typography from "@mui/material/Typography";
-import * as firebase from "../../model/firebase";
-import {CMenu} from "../../model/chefmenu"
 
 const SettingMenu = () => {
   const navigate = useNavigate();
@@ -64,15 +61,10 @@ const SettingMenu = () => {
             color="primary"
             size="large"
             fullWidth
-            onClick={()=>{
-              console.log("Test")
+            onClick={() => {
+              console.log("Test");
 
-
-
-
-
-
-
+              
             }}
           >
             測試
@@ -80,8 +72,7 @@ const SettingMenu = () => {
         </Stack>
 
         <Stack direction="row" spacing={1} sx={{ mb: 10 }}>
-          {/* <Link to="../"> */}
-          <div>
+                    <div>
             <IconButton
               sx={{ m: 1 }}
               aria-label="return"
@@ -92,18 +83,11 @@ const SettingMenu = () => {
             </IconButton>
           </div>
           <div>
-            <IconButton
-              sx={{ m: 1 }}
-              aria-label="cancel"
-              color="error"
-              onClick={handleCancelClick}
-            >
+            <IconButton sx={{ m: 1 }} aria-label="cancel" color="error" onClick={handleCancelClick}>
               <CloseIcon />
             </IconButton>
           </div>
-          {/* </Link> */}
-        </Stack>
-
+                  </Stack>
       </Box>
     </div>
   );

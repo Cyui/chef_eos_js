@@ -1,12 +1,10 @@
-import useState from "react-usestateref";
+import * as React from "react";
 import FormControl from "@mui/material/FormControl";
 import Stack from "@mui/material/Stack";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import IconButton from "@mui/material/IconButton";
-import DeleteIcon from "@mui/icons-material/Delete";
-import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import * as firebase from "../../../model/firebase";
@@ -14,11 +12,11 @@ import * as firebase from "../../../model/firebase";
 const ValidList = ({ optionValid, setOptionValid }) => {
   return (
     <div>
-      {optionValid.map((vid) => {
+      {optionValid.map((item) => {
         return (
           <ValidRow
-            key={vid}
-            id={vid}
+            key={item}
+            vid={item}
             optionValid={optionValid}
             setOptionValid={setOptionValid}
           />
@@ -28,14 +26,14 @@ const ValidList = ({ optionValid, setOptionValid }) => {
   );
 };
 
-const ValidRow = ({ id, optionValid, setOptionValid }) => {
+const ValidRow = ({ vid, optionValid, setOptionValid }) => {
   const menu = firebase.Menu;
 
-  const [idName, setIdName, idNameRef] = useState(
-    firebase.Menu.products.find((product) => product.id === id)?.name || null
+  const [idName, setIdName] = React.useState(
+    firebase.Menu.products.find((product) => product.id === vid)?.name || null
   );
 
-  const [validNameList, setValidNameList, validNameListRef] = useState(
+  const [validNameList, setValidNameList] = React.useState(
     menu.products.map((item) => {
       return { id: item.id, name: item.name };
     }) || []
@@ -43,12 +41,10 @@ const ValidRow = ({ id, optionValid, setOptionValid }) => {
 
   const handleSelectValidChange = (event) => {
     setIdName(event.target.value);
-    setOptionValid((vid) => {
-      return vid.map((item) => {
-        if (item === id) {
-          item = firebase.Menu.products.find(
-            (product) => product.name === event.target.value
-          ).id;
+    setOptionValid((vids) => {
+      return vids.map((item) => {
+        if (item === vid) {
+          item = firebase.Menu.products.find((product) => product.name === event.target.value).id;
         }
         return item;
       });
@@ -72,7 +68,7 @@ const ValidRow = ({ id, optionValid, setOptionValid }) => {
             onOpen={() => {
               setValidNameList(
                 validNameList.filter((item) => {
-                  return !optionValid.includes(item.id) || (item.name === idName);
+                  return !optionValid.includes(item.id) || item.name === idName;
                 })
               );
             }}
@@ -89,9 +85,8 @@ const ValidRow = ({ id, optionValid, setOptionValid }) => {
         <IconButton
           aria-label="delete"
           onClick={() => {
-            //filter order for delete
             setOptionValid((valid) => {
-              return valid.filter((item) => item !== id);
+              return valid.filter((item) => item !== vid);
             });
           }}
         >

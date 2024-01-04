@@ -1,62 +1,39 @@
-import React from "react";
-import { useState, useRef, useEffect } from "react";
-import { styled } from "@mui/material/styles";
+import * as React from "react";
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
-import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import { ListItemButton } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
-import FormGroup from "@mui/material/FormGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import FolderIcon from "@mui/icons-material/Folder";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Button from "@mui/material/Button";
 import CloseIcon from "@mui/icons-material/Close";
 import ArticleIcon from "@mui/icons-material/Article";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
-import DoneIcon from "@mui/icons-material/Done";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import * as firebase from "../../model/firebase";
-import {
-  Routes,
-  Route,
-  Link,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
-import EditOrder from "../EditOrder";
-import Home from "../Home";
-import { CInvoice, invoiceFromObject } from "../../model/invoice";
+import { useNavigate } from "react-router-dom";
+import { CInvoice } from "../../model/invoice";
 
 export default function InvoiceList() {
-  //const location = useLocation();
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  const [dense, setDense] = useState(false);
-  const [secondary, setSecondary] = useState(true);
+  const [dense, setDense] = React.useState(false);
+  const [secondary, setSecondary] = React.useState(true);
 
-  const [open, setOpen] = useState(false);
-  const invoice = useRef(new CInvoice());
+  const [open, setOpen] = React.useState(false);
+  const invoice = React.useRef(new CInvoice());
 
-  const [invoices, setInvoices] = useState(
-    //location.state.map((obj) => invoiceFromObject(obj))
-    firebase.Invoices
-  );
+  const [invoices, setInvoices] = React.useState(firebase.Invoices);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setInvoices([...invoices]);
   }, []);
 
@@ -94,12 +71,6 @@ export default function InvoiceList() {
 
                       handleClickOpen();
                       invoice.current = value;
-
-                      // setInvoices((items) => {
-                      //   return items.filter((item) => item.doc !== value.doc);
-                      // });
-
-                      // firebase.deleteInvoiceFromFirebase(value.doc);
                     }}
                   >
                     <DeleteIcon />
@@ -107,7 +78,6 @@ export default function InvoiceList() {
                 }
                 key={value.id}
                 onClick={() => {
-                  //console.log(value)
                   navigate("../edit", { state: value.id });
                 }}
               >
@@ -129,9 +99,7 @@ export default function InvoiceList() {
             aria-labelledby="alert-dialog-title"
             aria-describedby="alert-dialog-description"
           >
-            <DialogTitle id="alert-dialog-title">
-              {`確定刪除此筆訂單？`}
-            </DialogTitle>
+            <DialogTitle id="alert-dialog-title">{`確定刪除此筆訂單？`}</DialogTitle>
             <DialogContent>
               <DialogContentText id="alert-dialog-description">
                 {`[${invoice.current.info.sn}] ${invoice.current.info.name} ${invoice.current.info.phone}`}
@@ -148,7 +116,6 @@ export default function InvoiceList() {
       </Grid>
 
       <Stack direction="row" spacing={1} sx={{ m: 1, mb: 10 }}>
-        {/* <Link to="../"> */}
         <IconButton
           sx={{ m: 1 }}
           aria-label="return"
@@ -170,7 +137,6 @@ export default function InvoiceList() {
         >
           <CloseIcon />
         </IconButton>
-        {/* </Link> */}
       </Stack>
     </Box>
   );

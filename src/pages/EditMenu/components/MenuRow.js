@@ -1,27 +1,28 @@
-import React from "react";
-import { useRef } from "react";
-import useState from "react-usestateref";
-import Select from "@mui/material/Select";
+import * as React from "react";
 import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { CMenu } from "../../../model/chefmenu";
-import { COption, CProduct, COrder } from "../../../model/invoice";
-import * as firebase from "../../../model/firebase";
+import { CProduct } from "../../../model/invoice";
 
-const MenuRow = ({ id, name, price, setMenuProducts }) => {
+const MenuRow = ({ product, setMenuProducts }) => {
+  const [prodName, setProdName] = React.useState(product.name);
+  const [prodPrice, setProdPrice] = React.useState(product.price);
+  const productRef = React.useRef(product);
 
-  const [prodName, setProdName, prodNameRef] = useState(name);
-  const [prodPrice, setProdPrice, prodPriceRef] = useState(price);
+  React.useEffect(() => {
+    productRef.current.name = prodName;
+    productRef.current.price = prodPrice;
+
+    pushMenuProduct();
+  }, [prodName, prodPrice]);
 
   const pushMenuProduct = () => {
     setMenuProducts((products) => {
       return products.map((item) => {
-        if (item.id === id) {
-          item.name = prodNameRef.current;
-          item.price = prodPriceRef.current;
+        if (item.id === product.id) {
+          item.name = productRef.current.name;
+          item.price = productRef.current.price;
         }
         return item;
       });
@@ -30,42 +31,43 @@ const MenuRow = ({ id, name, price, setMenuProducts }) => {
 
   return (
     <div>
-      <Stack direction="row" spacing={1}  sx={{ m: 2 }}>
+      <Stack direction="row" spacing={1} sx={{ m: 2 }}>
         <div>
           <TextField
-              sx={{ width: 164 }}
-              id="textName"
-              label="品項"
-              variant="outlined"
-              //fullWidth
-              value={prodName}
-              onChange={(e) => {
-                setProdName(e.target.value);
-                pushMenuProduct()
-              }}
-            />
+            sx={{ width: 164 }}
+            id="textName"
+            label="品項"
+            variant="outlined"
+            //fullWidth
+            value={prodName}
+            onChange={(e) => {
+              setProdName(e.target.value);
+                          }}
+          />
         </div>
 
         <div>
           <TextField
-              sx={{ width: 140 }}
-              id="textPrice"
-              label="價格"
-              variant="outlined"
-              //fullWidth
-              value={prodPrice}
-              onChange={(e) => {
-                setProdPrice(Number(e.target.value)|| 0);
-                pushMenuProduct()
-              }}
-            />
+            sx={{ width: 140 }}
+            id="textPrice"
+            label="價格"
+            variant="outlined"
+            //fullWidth
+            value={prodPrice}
+            onChange={(e) => {
+              setProdPrice(Number(e.target.value) || 0);
+                          }}
+          />
         </div>
 
-        <IconButton aria-label="delete" onClick={()=>{
-          setMenuProducts((products) => {
-            return products.filter((item) => item.id !== id);
-          });
-        }}>
+        <IconButton
+          aria-label="delete"
+          onClick={() => {
+            setMenuProducts((products) => {
+              return products.filter((item) => item.id !== product.id);
+            });
+          }}
+        >
           <DeleteIcon />
         </IconButton>
       </Stack>

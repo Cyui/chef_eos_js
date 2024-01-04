@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import ReactDOM from "react-dom/client";
 import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
@@ -12,7 +12,6 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Typography from "@mui/material/Typography";
 import * as firebase from "../../model/firebase";
-import { signOut } from "firebase/auth";
 
 const Home = () => {
   const navigate = useNavigate();

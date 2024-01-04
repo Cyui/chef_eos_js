@@ -1,6 +1,4 @@
-import React from "react";
-import { useState, useRef, useEffect } from "react";
-import Button from "@mui/material/Button";
+import * as React from "react";
 import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
 import Select from "@mui/material/Select";
@@ -13,9 +11,9 @@ import AddIcon from "@mui/icons-material/Add";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
-import "dayjs/locale/zh-tw";
 import dayjs from "dayjs";
-import { CInfo, CInvoice, COrder } from "../../../model/invoice";
+import "dayjs/locale/zh-tw";
+import { CInfo, COrder } from "../../../model/invoice";
 
 const EditInfo = ({ setOrders, info, setInfo }) => {
   dayjs.locale("zh-tw");
@@ -23,22 +21,21 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
   const statusList = ["待處理", "已完成"];
   const deliverList = ["自取", "宅配"];
 
-  const [sn, setNo] = useState(info.sn);
-  const [name, setName] = useState(info.name);
-  const [phone, setPhone] = useState(info.phone);
-  const [date, setDate] = useState(dayjs(info.date, "YYYY/MM/DD"));
-  const [time, setTime] = useState(dayjs(info.time, "HH:mm"));
-  const [note, setNote] = useState(info.note);
-  const [deposit, setDeposit] = useState(info.deposit);
-  const [deliver, setDeliver] = useState(info.deliver || "自取");
-  const [status, setStatus] = useState(info.status || "待處理");
+  const [sn, setNo] = React.useState(info.sn);
+  const [name, setName] = React.useState(info.name);
+  const [phone, setPhone] = React.useState(info.phone);
+  const [date, setDate] = React.useState(dayjs(info.date, "YYYY/MM/DD"));
+  const [time, setTime] = React.useState(dayjs(info.time, "HH:mm"));
+  const [note, setNote] = React.useState(info.note);
+  const [deposit, setDeposit] = React.useState(info.deposit);
+  const [deliver, setDeliver] = React.useState(info.deliver || "自取");
+  const [status, setStatus] = React.useState(info.status || "待處理");
 
-  useEffect(() => {}, []);
+  React.useEffect(() => {}, []);
 
   const handleSelStatusChange = (event) => {
     setStatus(event.target.value);
     setInfo((info) => {
-      // info.status = event.target.value;
       return { ...info, status: event.target.value };
     });
   };
@@ -148,9 +145,9 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
             sx={{ width: 164 }}
             value={date}
             onChange={(value) => {
-              setDate(convertToDateString(value));
+              setDate(value);
               setInfo((info) => {
-                return { ...info, date: convertToDateString(value) };
+                return { ...info, date: convertToDateString(value || null) };
               });
             }}
           />
@@ -159,9 +156,9 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
             sx={{ width: 164 }}
             value={time}
             onChange={(value) => {
-              setTime(convertToTimeString(value));
+              setTime(value);
               setInfo((info) => {
-                return { ...info, time: convertToTimeString(value) };
+                return { ...info, time: convertToTimeString(value || null) };
               });
             }}
           />
@@ -227,12 +224,7 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
         </div>
       </Stack>
 
-      <IconButton
-        sx={{ m: 1 }}
-        aria-label="add"
-        color="primary"
-        onClick={handleAddClick}
-      >
+      <IconButton sx={{ m: 1 }} aria-label="add" color="primary" onClick={handleAddClick}>
         <AddIcon />
       </IconButton>
     </div>

@@ -1,7 +1,5 @@
-import React from "react";
-import { useEffect } from "react";
-import useState from "react-usestateref";
-import { useNavigate, Link } from "react-router-dom";
+import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
@@ -13,38 +11,46 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
-import { blue, red, green } from "@mui/material/colors";
 import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
-import DoneIcon from "@mui/icons-material/Done";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
-import "dayjs/locale/zh-tw";
 import dayjs from "dayjs";
+import "dayjs/locale/zh-tw";
 import * as firebase from "../../model/firebase";
+import { CInvoice } from "../../model/invoice";
+
+dayjs.locale("zh-tw");
+var isBetween = require("dayjs/plugin/isBetween");
+dayjs.extend(isBetween);
 
 const QueryInput = () => {
-  dayjs.locale("zh-tw");
-
   const navigate = useNavigate();
 
   const statusList = ["待處理", "已完成"];
   const deliverList = ["自取", "宅配"];
   const noteList = ["", "有備註"];
 
-  const [sn, setSN] = useState("");
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [dateFrom, setDateFrom, dateFromRef] = useState("");
-  const [timeFrom, setTimeFrom, timeFromRef] = useState("");
-  const [dateTo, setDateTo, dateToRef] = useState("");
-  const [timeTo, setTimeTo, timeToRef] = useState("");
-  const [noteOpt, setNoteOpt] = useState("");
-  const [deliver, setDeliver] = useState("");
-  const [status, setStatus] = useState("");
+  const [sn, setSN] = React.useState("");
+  const [name, setName] = React.useState("");
+  const [phone, setPhone] = React.useState("");
+  const [dateFrom, setDateFrom] = React.useState(null);
+  const [timeFrom, setTimeFrom] = React.useState(dayjs("00:00", "HH:mm"));
+  const [dateTo, setDateTo] = React.useState(null);
+  const [timeTo, setTimeTo] = React.useState(dayjs("23:00", "HH:mm"));
+  const [noteOpt, setNoteOpt] = React.useState("");
+  const [deliver, setDeliver] = React.useState("");
+  const [status, setStatus] = React.useState("");
 
-  useEffect(() => {
-    firebase.pullAllInvoiceFromFirebase();
-  }, []);
+  const dateFromRef = React.useRef(null);
+  const timeFromRef = React.useRef(null);
+  const dateToRef = React.useRef(null);
+  const timeToRef = React.useRef(null);
+
+  React.useEffect(() => {
+    dateFromRef.current = dateFrom;
+    timeFromRef.current = timeFrom;
+    dateToRef.current = dateTo;
+    timeToRef.current = timeTo;
+  }, [dateFrom, timeFrom, dateTo, timeTo]);
 
   const handleSelStatusChange = (event) => {
     setStatus(event.target.value);
@@ -59,6 +65,7 @@ const QueryInput = () => {
   };
 
   const getFilterResult = () => {
+    firebase.pullAllInvoiceFromFirebase();
     let result = [...firebase.Invoices];
 
     if (sn) {
@@ -86,20 +93,10 @@ const QueryInput = () => {
     }
 
     if (dateFrom) {
-      if (!dateTo) {
-        setDateTo(dateFrom);
-      }
-      if (!timeFrom) {
-        setTimeFrom("00:00");
-      }
-      if (!timeTo) {
-        setTimeTo("24:00");
-      }
-
-      let dtFrom = dateFromRef.current + "T" + timeFromRef.current;
-      let dtTo = dateToRef.current + "T" + timeToRef.current;
-
-      //console.log(dtFrom, dtTo)
+      let dtFrom =
+        convertToDateString(dateFromRef.current) + "T" + convertToTimeString(timeFromRef.current);
+      let dtTo =
+        convertToDateString(dateToRef.current) + "T" + convertToTimeString(timeToRef.current);
 
       result = result.filter((item) => {
         let dt = item.info.date + "T" + item.info.time;
@@ -205,7 +202,8 @@ const QueryInput = () => {
             label="取貨日期(起)"
             value={dateFrom}
             onChange={(value) => {
-              setDateFrom(convertToDateString(value));
+              setDateFrom(value);
+              setDateTo(value);
             }}
           />
           <TimePicker
@@ -213,7 +211,7 @@ const QueryInput = () => {
             label="取貨時間(起)"
             value={timeFrom}
             onChange={(value) => {
-              setTimeFrom(convertToTimeString(value));
+              setTimeFrom(value);
             }}
           />
         </LocalizationProvider>
@@ -226,7 +224,7 @@ const QueryInput = () => {
             label="取貨日期(迄)"
             value={dateTo}
             onChange={(value) => {
-              setDateTo(convertToDateString(value));
+              setDateTo(value);
             }}
           />
           <TimePicker
@@ -234,7 +232,7 @@ const QueryInput = () => {
             label="取貨時間(迄)"
             value={timeTo}
             onChange={(value) => {
-              setTimeTo(convertToTimeString(value));
+              setTimeTo(value);
             }}
           />
         </LocalizationProvider>
@@ -313,7 +311,7 @@ const QueryInput = () => {
         </div>
         <div>
           <Button
-            sx={{ m: 1, my: 2  }}
+            sx={{ m: 1, my: 2 }}
             variant="outlined"
             color="primary"
             onClick={handleQueryInvoiceClick}
@@ -322,41 +320,6 @@ const QueryInput = () => {
           </Button>
         </div>
       </Stack>
-
-      {/* <Stack direction="row" spacing={1} sx={{ width: 336 }}>
-        <div>
-          <Link to="../">
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ m: 1, py: 1.5 }}
-              onClick={() => {}}
-            >
-              上一頁
-            </Button>
-          </Link>
-        </div>
-        <div>
-          <Button
-            sx={{ m: 1, px: 2, py: 1.5 }}
-            variant="contained"
-            color="primary"
-            onClick={handleQuerySummaryClick}
-          >
-            查詢統計
-          </Button>
-        </div>
-        <div>
-          <Button
-            sx={{ m: 1, px: 2, py: 1.5 }}
-            variant="contained"
-            color="primary"
-            onClick={handleQueryInvoiceClick}
-          >
-            查詢訂單
-          </Button>
-        </div>
-      </Stack> */}
     </div>
   );
 };

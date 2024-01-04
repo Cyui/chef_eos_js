@@ -1,3 +1,5 @@
+import { CInvoice, COption, CProduct, COrder } from "./invoice";
+
 class CSummary {
   constructor(invoices = []) {
     this.invoices = invoices;

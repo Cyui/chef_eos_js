@@ -1,5 +1,5 @@
 import { app } from "../firebase-config";
-import { getAuth, signOut } from "firebase/auth";
+import { getAuth, signOut, Auth } from "firebase/auth";
 import {
   getFirestore,
   collection,
@@ -15,8 +15,9 @@ import {
   deleteDoc,
   where,
   FieldPath,
+
 } from "firebase/firestore";
-import { invoiceFromObject } from "./invoice";
+import { CInvoice, invoiceFromObject } from "./invoice";
 import { CMenu, menuFromObject } from "./chefmenu";
 
 // Initialize Cloud Firestore and get a reference to the service

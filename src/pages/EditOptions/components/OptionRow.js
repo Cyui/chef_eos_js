@@ -1,48 +1,38 @@
-import React from "react";
-import { useRef, useEffect } from "react";
-import useState from "react-usestateref";
-import Select from "@mui/material/Select";
+import * as React from "react";
 import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import IconButton from "@mui/material/IconButton";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import MenuList from "../../EditMenu/components/MenuList";
 import ValidList from "./ValidListRow";
-import { CMenu } from "../../../model/chefmenu";
-import { COption, CProduct, COrder } from "../../../model/invoice";
-import * as firebase from "../../../model/firebase";
+import { COption } from "../../../model/invoice";
 
-const OptionRow = ({ id, menuOptions, setMenuOptions }) => {
-  const [optionTag, setOptionTag, optionTagRef] = useState(
-    menuOptions.find((obj) => obj.option.id === id).option.tag
-  );
-  const [optionDiff, setOptionDiff, optionDiffRef] = useState(
-    menuOptions.find((obj) => obj.option.id === id).option.diff
-  );
-  const [optionValid, setOptionValid, optionValidRef] = useState(
-    menuOptions.find((obj) => obj.option.id === id).valid
-  );
+const OptionRow = ({ id, option, valid, setMenuOptions }) => {
+  const [optionTag, setOptionTag] = React.useState(option.tag);
+  const [optionDiff, setOptionDiff] = React.useState(option.diff);
+  const [optionValid, setOptionValid] = React.useState(valid);
 
-  useEffect(() => {
+  const optionRef = React.useRef(option);
+  const optionValidRef = React.useRef(valid);
+
+  React.useEffect(() => {
+    optionRef.current.tag = optionTag;
+    optionRef.current.diff = optionDiff;
+    optionValidRef.current = optionValid;
+
     pushOption();
-  });
+  }, [optionTag, optionDiff, optionValid]);
 
   const pushOption = () => {
-    let opt = menuOptions.map((item) => {
+    setMenuOptions((menuOptions) => {
+      return menuOptions.map((item) => {
       if (item.option.id === id) {
-        item.option.tag = optionTagRef.current;
-        item.option.diff = optionDiffRef.current;
+        item.option = optionRef.current;
         item.valid = optionValidRef.current;
       }
       return item;
     });
-
-    setMenuOptions(opt);
+});
   };
 
   return (
@@ -81,7 +71,6 @@ const OptionRow = ({ id, menuOptions, setMenuOptions }) => {
         <IconButton
           aria-label="delete"
           onClick={() => {
-            //filter order for delete
             setMenuOptions((options) => {
               return options.filter((item) => item.option.id !== id);
             });
@@ -107,7 +96,6 @@ const OptionRow = ({ id, menuOptions, setMenuOptions }) => {
               return item;
             });
           });
-          //console.log(optionValidRef.current)
         }}
       >
         <AddCircleIcon />

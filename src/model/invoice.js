@@ -1,6 +1,6 @@
 /**
  * Copyright Cyui
- * Last update date: 2023-12-16
+ * Last update date: 2024-01-04
  */
 
 import { v4 } from "uuid";
@@ -18,15 +18,12 @@ class CProduct {
     this.id = id;
     this.name = name;
     this.price = price;
-    this.options = options; //is array type
+    this.options = options;
   }
 
   get finalprice() {
     if (this.options) {
-      return this.options.reduce(
-        (sum, option) => sum + option.diff,
-        this.price
-      );
+      return this.options.reduce((sum, option) => sum + option.diff, this.price);
     }
 
     return this.price;
@@ -34,10 +31,7 @@ class CProduct {
 
   get fullname() {
     if (this.options) {
-      return this.options.reduce(
-        (sum, option) => sum + `[${option.tag}]`,
-        this.name
-      );
+      return this.options.reduce((sum, option) => sum + `[${option.tag}]`, this.name);
     }
 
     return this.name;
@@ -57,26 +51,16 @@ class COrder {
 }
 
 class CInfo {
-  constructor(
-    sn = "",
-    name = "",
-    phone = "",
-    date = "",
-    time = "",
-    note = "",
-    deposit = 0,
-    deliver = "自取",
-    status = "待處理"
-  ) {
-    this.sn = sn;
-    this.name = name;
-    this.phone = phone;
-    this.date = date;
-    this.time = time;
-    this.note = note;
-    this.deposit = deposit;
-    this.deliver = deliver;
-    this.status = status;
+  constructor() {
+    this.sn = "";
+    this.name = "";
+    this.phone = "";
+    this.date = "";
+    this.time = "";
+    this.note = "";
+    this.deposit = 0;
+    this.deliver = "自取";
+    this.status = "待處理";
   }
 }
 
@@ -162,25 +146,24 @@ const invoiceFromObject = (obj) => {
           order.product.id,
           order.product.name,
           order.product.price,
-          order.product.options?.map(
-            (option) => new COption(option.id, option.tag, option.diff)
-          )
+          order.product.options?.map((option) => new COption(option.id, option.tag, option.diff))
         ),
         order.quantity
       );
     });
     invoice.discount = obj.discount;
-    invoice.info = new CInfo(
-      obj.info.sn,
-      obj.info.name,
-      obj.info.phone,
-      obj.info.date,
-      obj.info.time,
-      obj.info.note,
-      obj.info.deposit,
-      obj.info.deliver,
-      obj.info.status
-    );
+    
+    invoice.info = new CInfo();
+    invoice.info.sn = obj.info.sn;
+    invoice.info.name = obj.info.name;
+    invoice.info.phone = obj.info.phone;
+    invoice.info.date = obj.info.date;
+    invoice.info.time = obj.info.time;
+    invoice.info.note = obj.info.note;
+    invoice.info.deposit = obj.info.deposit;
+    invoice.info.deliver = obj.info.deliver;
+    invoice.info.status = obj.info.status;
+
     invoice.doc = obj.doc;
   }
 

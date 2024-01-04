@@ -1,29 +1,14 @@
-import React from "react";
-import { useRef, useEffect } from "react";
-import useState from "react-usestateref";
-//import  from "react-usestateref";
+import * as React from "react";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
-import { blue, red, green } from "@mui/material/colors";
 import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import DoneIcon from "@mui/icons-material/Done";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
-import Typography from "@mui/material/Typography";
-import "dayjs/locale/zh-tw";
 import MenuList from "./components/MenuList";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Link,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
-import { CInfo, CProduct, CInvoice, invoiceFromObject } from "../../model/invoice";
+import { useNavigate } from "react-router-dom";
+import { CProduct } from "../../model/invoice";
 import * as firebase from "../../model/firebase";
 import { v4 } from "uuid";
 
@@ -32,18 +17,18 @@ export var serialNo = 0;
 const EditMenu = () => {
   const navigate = useNavigate();
 
-  const [menuProducts, setMenuProducts, menuProductsRef] = useState(firebase.Menu.products.map(
-    (item) => new CProduct(item.id, item.name, item.price)
-  ) || []);
+  const [menuProducts, setMenuProducts] = React.useState(
+    firebase.Menu.products.map((item) => new CProduct(item.id, item.name, item.price)) || []
+  );
+const menuProductsRef = React.useRef([]);
 
-  useEffect(() => {
-    
-  });
+  React.useEffect(() => {
+    menuProductsRef.current = menuProducts;
+  }, [menuProducts]);
 
   const handleSubmitClick = () => {
-    //console.log(menuProductsRef.current)
-    firebase.Menu.products = menuProductsRef.current
-    firebase.pushMenuToFirebase(firebase.Menu)
+        firebase.Menu.products = menuProductsRef.current;
+    firebase.pushMenuToFirebase(firebase.Menu);
 
     navigate(-1);
   };
@@ -59,16 +44,13 @@ const EditMenu = () => {
   return (
     <Box sx={{ m: 0 }}>
       <div>
-        <MenuList
-          menuProducts={menuProducts}
-          setMenuProducts={setMenuProducts}
-        />
+        <MenuList menuProducts={menuProducts} setMenuProducts={setMenuProducts} />
 
         <IconButton
           sx={{ m: 1 }}
           aria-label="add"
           color="primary"
-          onClick={ () =>
+          onClick={() =>
             setMenuProducts((menuProducts) => [...menuProducts, new CProduct(v4(), "", 0)])
           }
         >
@@ -76,8 +58,7 @@ const EditMenu = () => {
         </IconButton>
 
         <Stack direction="row" spacing={1} sx={{ mb: 10 }}>
-          {/* <Link to="../"> */}
-          <div>
+                    <div>
             <IconButton
               sx={{ m: 1 }}
               aria-label="return"
@@ -88,12 +69,7 @@ const EditMenu = () => {
             </IconButton>
           </div>
           <div>
-            <IconButton
-              sx={{ m: 1 }}
-              aria-label="cancel"
-              color="error"
-              onClick={handleCancelClick}
-            >
+            <IconButton sx={{ m: 1 }} aria-label="cancel" color="error" onClick={handleCancelClick}>
               <CloseIcon />
             </IconButton>
           </div>
@@ -107,8 +83,7 @@ const EditMenu = () => {
               <DoneIcon />
             </IconButton>
           </div>
-          {/* </Link> */}
-        </Stack>
+                  </Stack>
       </div>
     </Box>
   );

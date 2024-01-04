@@ -1,21 +1,3 @@
-// import React from 'react';
-// import { useState, useRef } from "react";
-// import { useLocation} from "react-router";
-import Button from "@mui/material/Button";
-// import TextField from '@mui/material/TextField'
-// import 'dayjs/locale/zh-tw';
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Link,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
-// import { CInvoice } from '../../model/invoice';
-import { CSummary } from "../../model/summary";
-import * as firebase from "../../model/firebase";
-
 import * as React from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -29,18 +11,18 @@ import CloseIcon from "@mui/icons-material/Close";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
-import { blue, red, green } from "@mui/material/colors";
-import { CInfo, CInvoice, invoiceFromObject } from "../../model/invoice";
+import * as Colors from "@mui/material/colors";
+import { useNavigate } from "react-router-dom";
+import { CSummary } from "../../model/summary";
+import * as firebase from "../../model/firebase";
 
 const SummaryList = () => {
-  //const location = useLocation();
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
   const summary = new CSummary(
-    //location.state.map((obj) => invoiceFromObject(obj))
-    firebase.Invoices
+        firebase.Invoices
   );
-  //let rows = createData(summary.report())
+  
   let rows = summary.report();
 
   return (
@@ -55,10 +37,7 @@ const SummaryList = () => {
           </TableHead>
           <TableBody>
             {rows.map((row) => (
-              <TableRow
-                key={row.name}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
+              <TableRow key={row.name} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
                 <TableCell component="th" scope="row">
                   {row.name}
                 </TableCell>
@@ -69,20 +48,11 @@ const SummaryList = () => {
         </Table>
       </TableContainer>
 
-      <Typography
-        sx={{ width: 164, m: 2 }}
-        variant="h6"
-        gutterBottom
-        color={blue[500]}
-      >
+      <Typography sx={{ width: 164, m: 2 }} variant="h6" gutterBottom color={Colors.blue[500]}>
         總金額: {summary.total}
       </Typography>
 
-      {/* <Link to="../">
-        <Button variant="contained" color="primary" onClick={() => {}}>Cancel</Button>
-      </Link> */}
       <Stack direction="row" spacing={1} sx={{ m: 1, mb: 10 }}>
-        {/* <Link to="../"> */}
         <IconButton
           sx={{ m: 1 }}
           aria-label="return"
@@ -104,7 +74,6 @@ const SummaryList = () => {
         >
           <CloseIcon />
         </IconButton>
-        {/* </Link> */}
       </Stack>
     </div>
   );
