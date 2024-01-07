@@ -32,7 +32,7 @@ const SummaryList = () => {
           <TableHead>
             <TableRow>
               <TableCell>品項</TableCell>
-              <TableCell align="right">數量 / 總數</TableCell>
+              <TableCell align="right">數量</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -41,7 +41,7 @@ const SummaryList = () => {
                 <TableCell component="th" scope="row">
                   {row.name}
                 </TableCell>
-                <TableCell align="right">{row.qty + " / " + row.per}</TableCell>
+                <TableCell align="right">{row.qty}</TableCell>
               </TableRow>
             ))}
           </TableBody>

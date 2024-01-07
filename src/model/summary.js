@@ -1,4 +1,5 @@
 import { CInvoice, COption, CProduct, COrder } from "./invoice";
+import * as firebase from "./firebase";
 
 class CSummary {
   constructor(invoices = []) {
@@ -9,48 +10,39 @@ class CSummary {
     return this.invoices.reduce((sum, invoice) => sum + invoice.total, 0);
   }
 
-  getOrdersDict(orders) {
-    let fullDict = {};
-    let mainDict = {};
-
-    orders.forEach(order => {
-        fullDict[order.product.fullname] = (fullDict[order.product.fullname] || 0 ) + order.quantity;
-        mainDict[order.product.name] = (mainDict[order.product.name] || 0 ) + order.quantity;
-    });
-
-    return {fullDict, mainDict};
-  };
-
   report() {
-    let fullResult = {};
-    let mainResult = {};
-
-    this.invoices.forEach(invoice => {
-      var { fullDict, mainDict } = this.getOrdersDict(invoice.orders);
-
-      for (let key in mainDict) {
-        mainResult[key] = (mainResult[key] || 0) + mainDict[key];
-      }
-
-      for (let key in fullDict) {
-        fullResult[key] = (fullResult[key] || 0) + fullDict[key];
-      }
+    let list = firebase.Menu.products.map((item) => {
+      return { main: item.name, qty: 0, sub: {} };
     });
 
-    let rows = []
+    this.invoices.forEach((invoice) => {
+      invoice.orders.forEach((order) => {
+        let obj = list.find((item) => item.main === order.product.name);
 
-    for (let fullKey in fullResult) {
-      let per = 0
+        if (order.product.options) {
+          let tag = order.product.options[0]?.tag;
 
-      for (let mainKey in mainResult) {
-        if(fullKey.search(mainKey) === 0) 
-         per = mainResult[mainKey]
-      }
+          if (!obj.sub[tag]) {
+            obj.sub[tag] = 0;
+          }
 
-      rows = [...rows, { name: fullKey, qty: fullResult[fullKey], per: per} ]
-    }
+          obj.sub[tag] += order.quantity;
+        }
+        obj.qty += order.quantity;
+      });
+    });
 
-    return rows
+    let rows = [];
+
+    list.forEach((item) => {
+      rows.push({ name: item.main, qty: item.qty });
+
+      Object.entries(item.sub).forEach((sub) => {
+        rows.push({ name: "▹ 選項： [" + sub[0] + "]", qty: sub[1] });
+      });
+    });
+
+    return rows;
   }
 }
 
