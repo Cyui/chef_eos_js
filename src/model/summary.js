@@ -18,17 +18,18 @@ class CSummary {
     this.invoices.forEach((invoice) => {
       invoice.orders.forEach((order) => {
         let obj = list.find((item) => item.main === order.product.name);
+        if (obj) {
+          if (order.product.options) {
+            let tag = order.product.options[0]?.tag;
 
-        if (order.product.options) {
-          let tag = order.product.options[0]?.tag;
+            if (!obj.sub[tag]) {
+              obj.sub[tag] = 0;
+            }
 
-          if (!obj.sub[tag]) {
-            obj.sub[tag] = 0;
+            obj.sub[tag] += order.quantity;
           }
-
-          obj.sub[tag] += order.quantity;
+          obj.qty += order.quantity;
         }
-        obj.qty += order.quantity;
       });
     });
 
