@@ -36,10 +36,10 @@ class CSummary {
     let rows = [];
 
     list.forEach((item) => {
-      rows.push({ name: item.main, qty: item.qty });
+      rows.push({ name: item.main, qty: item.qty, color: "black" });
 
       Object.entries(item.sub).forEach((sub) => {
-        rows.push({ name: "▹ 選項： [" + sub[0] + "]", qty: sub[1] });
+        rows.push({ name: "▹ 選項： [" + sub[0] + "]", qty: sub[1], color: "gray" });
       });
     });
 

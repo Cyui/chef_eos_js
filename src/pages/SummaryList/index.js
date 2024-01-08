@@ -19,9 +19,7 @@ import * as firebase from "../../model/firebase";
 const SummaryList = () => {
     const navigate = useNavigate();
 
-  const summary = new CSummary(
-        firebase.Invoices
-  );
+  const summary = new CSummary(firebase.Invoices);
   
   let rows = summary.report();
 
@@ -38,10 +36,12 @@ const SummaryList = () => {
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.name} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-                <TableCell component="th" scope="row">
+                <TableCell component="th" scope="row" sx={{ color: row.color }}>
                   {row.name}
                 </TableCell>
-                <TableCell align="right">{row.qty}</TableCell>
+                <TableCell align="right" sx={{ color: row.color }}>
+                  {row.qty}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
