@@ -67,7 +67,9 @@ const ProductRow = ({ id, order, setOrders }) => {
 
     menu.options.forEach((item) => {
       item.valid.forEach((id) => {
-        if (id === product.id) optList.push(item.option.tag);
+        if (id === product.id) {
+          optList.push(item.option.tag);
+}
       });
     });
 
@@ -82,7 +84,7 @@ const ProductRow = ({ id, order, setOrders }) => {
 
   const handleSelectOptionChange = (event) => {
     menu.options.forEach((item) => {
-      if (item.option.tag === event.target.value) {
+      if (item.option.tag === event.target.value && item.valid.includes(product.id)) {
         setOptions([item.option]);
       }
     });
@@ -109,14 +111,7 @@ const ProductRow = ({ id, order, setOrders }) => {
   };
 
   return (
-    // <ListItem
-    //   secondaryAction={
-    //     <IconButton edge="end" aria-label="delete">
-    //       <DeleteIcon />
-    //     </IconButton>
-    //   }
-    // >
-    <Stack direction="row" spacing={1} sx={{ m: 1 }}>
+        <Stack direction="row" spacing={1} sx={{ m: 1 }}>
       <FormControl>
         <InputLabel id="label_product">品項</InputLabel>
         <Select
@@ -166,8 +161,7 @@ const ProductRow = ({ id, order, setOrders }) => {
         <DeleteIcon />
       </IconButton>
     </Stack>
-    // </ListItem>
-  );
+      );
 };
 
 export default ProductRow;
