@@ -8,6 +8,12 @@ import CloseIcon from "@mui/icons-material/Close";
 import DoneIcon from "@mui/icons-material/Done";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 import EditInfo from "./components/EditInfo";
 import OrderList from "./components/OrderList";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -29,7 +35,8 @@ const EditOrder = () => {
   const [discount, setDiscount] = React.useState(invoice.current.discount);
   const [total, setTotal] = React.useState(invoice.current.total);
   const [finalpayment, setFinalpayment] = React.useState(invoice.current.finalpayment);
-
+  const [open, setOpen] = React.useState(false);
+  
   React.useEffect(() => {
     invoice.current.info = info;
     invoice.current.orders = orders;
@@ -44,6 +51,11 @@ const EditOrder = () => {
   };
 
   const handleSubmitClick = () => {
+if (invoice.current.orders.find((item) => item.product.id === "")) {
+      handleClickOpen();
+      return;
+    }
+
     updateInvoice();
 
     if (invoice.current.id === "") {
@@ -69,10 +81,17 @@ const EditOrder = () => {
     navigate(-1);
   };
 
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   return (
     <Box sx={{ m: 0 }}>
-      <div>
-        <Typography variant="h6" gutterBottom sx={{ m: 1 }}>
+              <Typography variant="h6" gutterBottom sx={{ m: 1 }}>
           {invoice.current.doc || "New"}
         </Typography>
         <EditInfo setOrders={setOrders} info={info} setInfo={setInfo} />
@@ -96,12 +115,7 @@ const EditOrder = () => {
         </Stack>
         <Stack direction="row" spacing={1} sx={{ mb: 10 }}>
                     <div>
-            <IconButton
-              sx={{ m: 1 }}
-              aria-label="return"
-              color="primary"
-              onClick={handleReturnClick}
-            >
+            <IconButton sx={{ m: 1 }} aria-label="return" color="primary" onClick={handleReturnClick}>
               <KeyboardReturnIcon />
             </IconButton>
           </div>
@@ -121,7 +135,23 @@ const EditOrder = () => {
             </IconButton>
           </div>
                   </Stack>
-      </div>
+      
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Error"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">有新增的品項尚未選擇</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} autoFocus>
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
