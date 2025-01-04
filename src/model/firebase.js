@@ -111,7 +111,7 @@ export async function pullAllInvoiceFromFirebase() {
     invoiceConverter
   );
 
-  const q = query(ref, orderBy("no", "desc"));
+  const q = query(ref, orderBy("info.sn", "desc"));
   const querySnapshot = await getDocs(q);
   querySnapshot.forEach((doc) => {
     // doc.data() is never undefined for query doc snapshots
