@@ -10,6 +10,10 @@ class CSummary {
     return this.invoices.reduce((sum, invoice) => sum + invoice.total, 0);
   }
 
+  get length() {
+    return this.invoices.length;
+  }
+
   report() {
     let list = firebase.Menu.products.map((item) => {
       return { main: item.name, qty: 0, sub: {} };

@@ -52,6 +52,10 @@ const SummaryList = () => {
         總金額: {summary.total}
       </Typography>
 
+      <Typography sx={{ width: 164, m: 2 }} variant="h6" gutterBottom color={Colors.green[500]}>
+        總單數: {summary.length}
+      </Typography>
+
       <Stack direction="row" spacing={1} sx={{ m: 1, mb: 10 }}>
         <IconButton
           sx={{ m: 1 }}
