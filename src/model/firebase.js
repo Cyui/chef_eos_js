@@ -1,5 +1,5 @@
 import { app } from "../firebase-config";
-import { getAuth, signOut, Auth } from "firebase/auth";
+import { getAuth, signOut } from "firebase/auth";
 import {
   getFirestore,
   collection,
