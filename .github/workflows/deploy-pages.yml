@@ -40,7 +40,7 @@ jobs:
             esac
           fi
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/heads/{0}', inputs.test_branch) || github.sha }}
           path: source
@@ -68,7 +68,7 @@ jobs:
             npm run build -- --base=/chef_eos_js/
           fi
       - name: Checkout deployment storage
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: main
           path: published
@@ -143,7 +143,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
