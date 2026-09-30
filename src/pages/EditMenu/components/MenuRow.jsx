@@ -1,4 +1,3 @@
-import * as React from "react";
 import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
 import IconButton from "@mui/material/IconButton";
@@ -18,7 +17,7 @@ const MenuRow = ({ product, setMenuProducts }) => {
         <div>
           <TextField
             sx={{ width: 164 }}
-            id="textName"
+            id={`textName-${product.id}`}
             label="品項"
             variant="outlined"
 
@@ -32,7 +31,7 @@ const MenuRow = ({ product, setMenuProducts }) => {
         <div>
           <TextField
             sx={{ width: 140 }}
-            id="textPrice"
+            id={`textPrice-${product.id}`}
             label="價格"
             variant="outlined"
 

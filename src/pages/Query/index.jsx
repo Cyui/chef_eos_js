@@ -200,7 +200,6 @@ const QueryInput = () => {
               labelId="label_note"
               id="note_select"
               sx={{ width: 164 }}
-              defaultValue=""
               value={noteOpt}
               label="備註"
               onChange={handleSelNoteOptChange}

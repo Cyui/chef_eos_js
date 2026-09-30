@@ -33,10 +33,10 @@ const ProductRow = ({ id, order, setOrders }) => {
   return (
         <Stack direction="row" spacing={1} sx={{ m: 1 }}>
       <FormControl>
-        <InputLabel id="label_product">品項</InputLabel>
+        <InputLabel id={`product-label-${id}`}>品項</InputLabel>
         <Select
-          labelId="label_product"
-          id="product_select"
+          labelId={`product-label-${id}`}
+          id={`product-select-${id}`}
           sx={{ width: 145 }}
           value={menu.products.some((item) => item.id === product.id) ? product.id : ""}
           label="品項"
@@ -47,10 +47,10 @@ const ProductRow = ({ id, order, setOrders }) => {
       </FormControl>
 
       <FormControl>
-        <InputLabel id="label_option">選項</InputLabel>
+        <InputLabel id={`option-label-${id}`}>選項</InputLabel>
         <Select
-          labelId="label_option"
-          id="option_select"
+          labelId={`option-label-${id}`}
+          id={`option-select-${id}`}
           sx={{ width: 95 }}
           value={availableOptions.some((item) => item.option.id === options?.[0]?.id) ? options[0].id : ""}
           label="選項"
@@ -61,10 +61,10 @@ const ProductRow = ({ id, order, setOrders }) => {
       </FormControl>
 
       <FormControl>
-        <InputLabel id="label_quantity">數量</InputLabel>
+        <InputLabel id={`quantity-label-${id}`}>數量</InputLabel>
         <Select
-          labelId="label_quantity"
-          id="quantity_select"
+          labelId={`quantity-label-${id}`}
+          id={`quantity-select-${id}`}
           sx={{ width: 80 }}
           value={quantity.toString()}
           label="數量"

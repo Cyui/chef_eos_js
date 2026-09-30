@@ -1,4 +1,3 @@
-import * as React from "react";
 import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
 import IconButton from "@mui/material/IconButton";
@@ -26,7 +25,7 @@ const OptionRow = ({ id, option, valid, setMenuOptions }) => {
         <div>
           <TextField
             sx={{ width: 132 }}
-            id="textTag"
+            id={`textTag-${id}`}
             label="名稱"
             variant="outlined"
 
@@ -40,7 +39,7 @@ const OptionRow = ({ id, option, valid, setMenuOptions }) => {
         <div>
           <TextField
             sx={{ width: 132 }}
-            id="textDiff"
+            id={`textDiff-${id}`}
             label="價差"
             variant="outlined"
 
