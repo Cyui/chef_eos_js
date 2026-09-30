@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import MenuIcon from "@mui/icons-material/Menu";
 import IconButton from "@mui/material/IconButton";
 import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
@@ -53,6 +54,17 @@ const SettingMenu = () => {
             startIcon={<QuestionMarkIcon />}
           >
             設定菜單選項
+          </Button>
+          <Button
+            sx={{ py: 2 }}
+            variant="contained"
+            color="primary"
+            size="large"
+            fullWidth
+            onClick={() => navigate("./years")}
+            startIcon={<CalendarMonthIcon />}
+          >
+            年度資料設定
           </Button>
         </Stack>
 

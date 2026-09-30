@@ -11,6 +11,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
+import { yearLabel } from "../../model/years";
 import * as firebase from "../../model/firebase";
 
 const Home = () => {
@@ -53,6 +54,7 @@ const Home = () => {
         <Typography variant="h6" gutterBottom sx={{ m: 1 }}>
           {firebase.Mail}
         </Typography>
+        <Typography sx={{ m: 1 }}>目前年度：{yearLabel(firebase.YearSelected)}</Typography>
 
         <Stack spacing={4} sx={{ mx: 8, my: 4 }}>
           <Button

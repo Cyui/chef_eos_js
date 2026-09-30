@@ -68,3 +68,27 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+
+## 年度資料設定
+
+每個帳號的年度設定存於 `{email}/user_info`，保留文件原有欄位：
+
+```json
+{
+  "year_selected": "2026y",
+  "years_available": ["2024y", "2026y"]
+}
+```
+
+- 介面顯示與新增輸入使用 `2026`；資料庫使用 `2026y`。
+- 已有 `year_selected` 時沿用該年度；不會自動加入任何歷史年度。
+- `years_available` 缺少或為空時，設定頁顯示空清單，仍可新增年度。直接修改資料庫後，重新進入年度設定頁會讀取最新清單。
+- `year_selected` 缺少時，依瀏覽器本地年份初始化當年：保留已有菜單，缺少時建立空白菜單，將當年加入可用清單並設為選定年度。
+- 訂單路徑為 `{email}/eos_invioces/{year}y/{docId}`，菜單路徑為 `{email}/eos_menu/{year}y/current`。空年度不建立假訂單。
+- 「設定 → 年度資料設定」可切換或新增年度；新增會將年度加入清單並直接選用，菜單不會從其他年度複製。
+- 已有菜單、訂單或登記的年度不會被覆蓋；介面提供「加入並切換」保留已有資料。
+- 年度初始化／新增以 transaction 同時更新菜單與設定，並以 merge 保留 `exp_date` 等其他欄位。
+- 切換後清空訂單、菜單及編號快取；新年度載入成功前阻擋資料操作。跨年度的舊請求不會覆蓋目前快取。
+
+合併前請以測試帳號驗收：未設定年度的登入、空年度清單、既有年度切換、新增年度、已有年度的加入，以及資料庫權限拒絕時的錯誤處理。

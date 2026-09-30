@@ -4,7 +4,7 @@ import { render, screen, act, cleanup } from '@testing-library/react';
 const mock = vi.hoisted(() => ({ callback: null, unsubscribe: vi.fn(), load: vi.fn(), initialize: vi.fn() }));
 vi.mock('./firebase-config', () => ({ app: {} }));
 vi.mock('firebase/auth', () => ({ getAuth: () => ({}), onAuthStateChanged: (_, callback) => { mock.callback = callback; return mock.unsubscribe; } }));
-vi.mock('./model/firebase', () => ({ initializeUser: mock.initialize, loadDashboardData: mock.load }));
+vi.mock('./model/firebase', () => ({ initializeUser: mock.initialize, loadDashboardData: mock.load, subscribeDataScope: () => () => {}, getDataScope: () => 0 }));
 vi.mock('./pages/Login', () => ({ default: () => <div>Login page</div> }));
 vi.mock('./pages/Home', () => ({ default: () => <div>Home page</div> }));
 vi.mock('./pages/EditOrder', () => ({ default: () => <div>Edit page</div> }));
