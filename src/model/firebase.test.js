@@ -45,7 +45,7 @@ it('ignores stale reads after switching accounts', async () => {
   const pending = firebase.pullAllInvoiceFromFirebase();
   const next = { uid: 'other', email: 'other@example.com' }; mock.auth.currentUser = next; firebase.initializeUser(next);
   const item = new CInvoice(); item.id = 'old'; finish({ docs: [{ id: 'doc', data: () => item }] });
-  await pending; expect(firebase.Invoices).toEqual([]); expect(firebase.Mail).toBe(next.email);
+  await expect(pending).rejects.toThrow('Data scope changed'); expect(firebase.Invoices).toEqual([]); expect(firebase.Mail).toBe(next.email);
 });
 it('rejects unauthenticated access and preserves cache for repeat auth callbacks', () => {
   const item = new CInvoice(); firebase.updateInvoices(item); firebase.initializeUser(owner); expect(firebase.Invoices).toEqual([item]);
@@ -59,7 +59,9 @@ it('isolates pending reads and writes across year switches', async () => {
   await firebase.changeSelectedYear('2026y');
   expect(firebase.Invoices).toEqual([]); expect(firebase.LastInvoiceNO).toBe(0); expect(firebase.Menu.products).toEqual([]);
   await expect(firebase.pushInvoiceToFirebase(item)).rejects.toThrow('Year data is not ready');
-  finishRead({ docs: [{ id: 'old-doc', data: () => item }] }); finishWrite(); await Promise.all([read, write]);
+  const completed = Promise.allSettled([read, write]);
+  finishRead({ docs: [{ id: 'old-doc', data: () => item }] }); finishWrite();
+  expect((await completed).map(result => result.status)).toEqual(['rejected', 'rejected']);
   expect(firebase.Invoices).toEqual([]); expect(item.doc).toBe('');
   expect(mock.setDoc.mock.calls[0][0].args[0].args).toContain('2025y');
   expect(firebase.YearSelected).toBe('2026y');
@@ -75,4 +77,10 @@ it('routes every data operation to the selected year after loading', async () =>
   const invoicePath = mock.setDoc.mock.calls[0][0].args[0].args;
   expect(invoicePath).toContain('2028y'); expect(mock.setDoc.mock.calls[1][0].args).toContain('2028y');
   expect(mock.updateDoc.mock.calls[0][0].args[0].args).toContain('2028y'); expect(mock.deleteDoc.mock.calls[0][0].args[0].args).toContain('2028y');
+});
+it('blocks writes when the active-year dashboard load fails', async () => {
+  mock.getDoc.mockRejectedValueOnce(new Error('permission-denied'));
+  await expect(firebase.loadDashboardData()).rejects.toThrow('permission-denied');
+  await expect(firebase.pushMenuToFirebase({ products: [], options: [] })).rejects.toThrow('Year data is not ready');
+  expect(mock.setDoc).not.toHaveBeenCalled();
 });

@@ -12,6 +12,14 @@ export const db = getFirestore(app);
 const auth = getAuth(app);
 export let YearSelected = "";
 export let YearsAvailable = [];
+export let Invoices = [];
+export let LastInvoiceNO = 0;
+export let Menu = new CMenu();
+export let Mail = "";
+let session = 0;
+let userId = null;
+let dashboardRequest = null;
+let invoiceRequest = null;
 let dataReady = false;
 const scopeListeners = new Set();
 
@@ -40,14 +48,7 @@ function activateSettings(settings) {
     notifyScope();
   }
 }
-export let Invoices = [];
-export let LastInvoiceNO = 0;
-export let Menu = new CMenu();
-export let Mail = "";
-let session = 0;
-let userId = null;
-let dashboardRequest = null;
-let invoiceRequest = null;
+
 
 export function initializeUser(user) {
   const nextId = user?.uid || null;
@@ -71,6 +72,10 @@ function currentSession(requireYear = true) {
 
 function isCurrent({ email, version }) {
   return email === Mail && version === session;
+}
+
+function assertCurrent(owner) {
+  if (!isCurrent(owner)) throw new Error("Data scope changed");
 }
 
 function invoiceCollection(email, year) {
@@ -100,11 +105,10 @@ export async function pushInvoiceToFirebase(invoice) {
   const saved = invoiceFromObject({ ...invoice, doc: ref.id });
   // Save the generated document ID in the same write, rather than a second update.
   await setDoc(ref, plainData(saved));
-  if (isCurrent(owner)) {
-    invoice.doc = ref.id;
-    updateInvoices(saved);
-    LastInvoiceNO = Math.max(LastInvoiceNO, saved.no);
-  }
+  assertCurrent(owner);
+  invoice.doc = ref.id;
+  updateInvoices(saved);
+  LastInvoiceNO = Math.max(LastInvoiceNO, saved.no);
   return saved;
 }
 
@@ -113,7 +117,8 @@ export async function pushMenuToFirebase(menu) {
   const owner = currentSession();
   const data = plainData(menu);
   await setDoc(doc(db, owner.email, "eos_menu", owner.year, "current"), data);
-  if (isCurrent(owner)) Menu = menuFromObject(data);
+  assertCurrent(owner);
+  Menu = menuFromObject(data);
 }
 
 export async function updateInvoiceToFirebase(invoice, docid) {
@@ -121,7 +126,8 @@ export async function updateInvoiceToFirebase(invoice, docid) {
   const owner = currentSession();
   const saved = invoiceFromObject({ ...invoice, doc: docid });
   await updateDoc(doc(invoiceCollection(owner.email, owner.year), docid), plainData(saved));
-  if (isCurrent(owner)) updateInvoices(saved);
+  assertCurrent(owner);
+  updateInvoices(saved);
   return saved;
 }
 
@@ -131,7 +137,8 @@ export function pullAllInvoiceFromFirebase() {
   const promise = (async () => {
     const snapshot = await getDocs(query(invoiceCollection(owner.email, owner.year), orderBy("info.sn", "desc")));
     const invoices = snapshot.docs.map((item) => invoiceFromObject({ ...item.data(), doc: item.id }));
-    if (isCurrent(owner)) Invoices = invoices;
+    assertCurrent(owner);
+    Invoices = invoices;
     return invoices;
   })();
   invoiceRequest = { version: owner.version, promise };
@@ -144,7 +151,8 @@ export async function pullMenuFromFirebase() {
   const owner = currentSession();
   const snapshot = await getDoc(doc(db, owner.email, "eos_menu", owner.year, "current"));
   const menu = snapshot.exists() ? menuFromObject(snapshot.data()) : new CMenu();
-  if (isCurrent(owner)) Menu = menu;
+  assertCurrent(owner);
+  Menu = menu;
   return menu;
 }
 
@@ -152,14 +160,16 @@ export async function deleteInvoiceFromFirebase(docid) {
   if (!dataReady) throw new Error("Year data is not ready");
   const owner = currentSession();
   await deleteDoc(doc(invoiceCollection(owner.email, owner.year), docid));
-  if (isCurrent(owner)) Invoices = Invoices.filter((item) => item.doc !== docid);
+  assertCurrent(owner);
+  Invoices = Invoices.filter((item) => item.doc !== docid);
 }
 
 export async function getLastInvoiceFromFirebase() {
   const owner = currentSession();
   const snapshot = await getDocs(query(invoiceCollection(owner.email, owner.year), orderBy("no", "desc"), limit(1)));
   const no = snapshot.docs[0]?.data().no || 0;
-  if (isCurrent(owner)) LastInvoiceNO = no;
+  assertCurrent(owner);
+  LastInvoiceNO = no;
   return no;
 }
 
