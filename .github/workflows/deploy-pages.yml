@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      test_branch:
+        description: 'Non-main branch to deploy to /test/ (run this workflow from main)'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -15,26 +20,120 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Checkout
+      - name: Validate deployment
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_REF: ${{ github.ref }}
+          TEST_BRANCH: ${{ inputs.test_branch }}
+        run: |
+          if [ "$WORKFLOW_REF" != "refs/heads/main" ]; then
+            echo "::error::Run this workflow from main and specify the test_branch input."
+            exit 1
+          fi
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            git check-ref-format --branch "$TEST_BRANCH"
+            case "$TEST_BRANCH" in
+              main|gh-pages|refs/*|-*) echo "::error::Choose a non-main source branch."; exit 1 ;;
+            esac
+          fi
+      - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/heads/{0}', inputs.test_branch) || github.sha }}
+          path: source
+          persist-credentials: false
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: npm
+          cache-dependency-path: source/package-lock.json
       - name: Install dependencies
+        working-directory: source
         run: npm ci
+      - name: Test
+        working-directory: source
+        run: npm test
       - name: Build
-        run: npm run build
+        working-directory: source
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            npm run build -- --base=/chef_eos_js/test/
+          else
+            npm run build -- --base=/chef_eos_js/
+          fi
+      - name: Checkout deployment storage
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: published
+      - name: Restore published versions
+        working-directory: published
+        run: |
+          if [ -n "$(git ls-remote --heads origin gh-pages)" ]; then
+            git fetch origin gh-pages
+            git checkout -B gh-pages FETCH_HEAD
+          else
+            git checkout --orphan gh-pages
+            git rm -rf .
+          fi
+      - name: Update selected version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          python - <<'PY'
+          import os
+          import shutil
+          from pathlib import Path
+
+          published = Path("published")
+          build = Path("source/dist")
+          if not (build / "index.html").is_file():
+              raise SystemExit("Missing build index.html")
+          if os.environ["EVENT_NAME"] == "workflow_dispatch":
+              if not (published / "index.html").is_file():
+                  raise SystemExit("Deploy main first to initialize the production version")
+              destination = published / "test"
+              if destination.exists():
+                  shutil.rmtree(destination)
+              shutil.copytree(build, destination)
+          else:
+              for entry in published.iterdir():
+                  if entry.name not in {".git", "test"}:
+                      if entry.is_dir():
+                          shutil.rmtree(entry)
+                      else:
+                          entry.unlink()
+              shutil.copytree(build, published, dirs_exist_ok=True)
+          (published / ".nojekyll").touch()
+          # Keep git metadata out of the website artifact.
+          shutil.copytree(published, "site", ignore=shutil.ignore_patterns(".git"))
+          PY
+      - name: Save both published versions
+        working-directory: published
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          TEST_BRANCH: ${{ inputs.test_branch }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          if ! git diff --cached --quiet; then
+            git commit -m "Deploy $EVENT_NAME $TEST_BRANCH"
+            git push origin HEAD:gh-pages
+          fi
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: site
 
   deploy:
     needs: build
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       pages: write

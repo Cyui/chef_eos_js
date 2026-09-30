@@ -92,3 +92,21 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 - 切換後清空訂單、菜單及編號快取；新年度載入成功前阻擋資料操作。跨年度的舊請求不會覆蓋目前快取。
 
 合併前請以測試帳號驗收：未設定年度的登入、空年度清單、既有年度切換、新增年度、已有年度的加入，以及資料庫權限拒絕時的錯誤處理。
+
+
+## 正式版與測試版部署
+
+- 正式版： https://cyui.github.io/chef_eos_js/ ，推送至 `main` 時自動部署。
+- 測試版： https://cyui.github.io/chef_eos_js/test/ ，只會手動部署，所有功能分支共用此網址。
+- 更新任一版本時，會保留另一個版本；`gh-pages` 分支保存兩個版本的建置結果。請勿用本機 `npm run deploy` 覆寫此分支。
+
+手動部署測試版：
+
+1. 進入 GitHub repository → **Actions** → **Deploy to GitHub Pages**。
+2. 按 **Run workflow**，**Use workflow from** 選 `main`（使用最新版部署流程）。
+3. 在 **test_branch** 輸入要測試的分支，例如 `feature/year-selection`。
+4. 按 **Run workflow**，等待 Test、Build 與 Deploy 完成後開啟測試網址。
+
+測試 branch 本身不需要先合併。每次部署會取代原本測試版；輸入 `main` 或 `gh-pages` 會被拒絕。正式版需先成功部署一次。
+
+測試版使用該 branch 的 Firebase 設定，通常與正式版連到同一個資料庫；請使用測試帳號操作。
