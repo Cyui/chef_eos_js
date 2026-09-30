@@ -68,3 +68,21 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+
+## 正式版與測試版部署
+
+- 正式版： https://cyui.github.io/chef_eos_js/ ，推送至 `main` 時自動部署。
+- 測試版： https://cyui.github.io/chef_eos_js/test/ ，只會手動部署，所有功能分支共用此網址。
+- 更新任一版本時，會保留另一個版本；`gh-pages` 分支保存兩個版本的建置結果。請勿用本機 `npm run deploy` 覆寫此分支。
+
+手動部署測試版：
+
+1. 進入 GitHub repository → **Actions** → **Deploy to GitHub Pages**。
+2. 按 **Run workflow**，**Use workflow from** 選 `main`（使用最新版部署流程）。
+3. 在 **test_branch** 輸入要測試的分支，例如 `feature/year-selection`。
+4. 按 **Run workflow**，等待 Test、Build 與 Deploy 完成後開啟測試網址。
+
+測試 branch 本身不需要先合併。每次部署會取代原本測試版；輸入 `main` 或 `gh-pages` 會被拒絕。正式版需先成功部署一次。
+
+測試版使用該 branch 的 Firebase 設定，通常與正式版連到同一個資料庫；請使用測試帳號操作。
