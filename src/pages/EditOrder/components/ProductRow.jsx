@@ -6,109 +6,29 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import { COption, CProduct, COrder } from "../../../model/invoice";
-import { CMenu } from "../../../model/chefmenu";
+import { CProduct, COrder } from "../../../model/invoice";
 import * as firebase from "../../../model/firebase";
 
 const ProductRow = ({ id, order, setOrders }) => {
   const menu = firebase.Menu;
 
-  const quantityList = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
-
-  const [product, setProduct] = React.useState(order.product || null);
-  const [options, setOptions] = React.useState(order.product.options || undefined);
-  const [quantity, setQuantity] = React.useState(order.quantity || 1);
-  const orderRef = React.useRef(order);
-
-  React.useEffect(() => {
-    orderRef.current = new COrder(
-      id,
-      new CProduct(product.id, product.name, product.price, options),
-      quantity
-    );
-
-    pushOrder();
-  }, [product, options, quantity]);
-
-  const pushOrder = () => {
-    setOrders((orders) => {
-      return orders.map((item) => {
-        if (item.id === id) {
-          item = orderRef.current;
-        }
-
-        return item;
-      });
-    });
+  const { product, quantity } = order;
+  const options = product.options;
+  const availableOptions = menu.options.filter((item) => item.valid.includes(product.id));
+  const updateOrder = (nextProduct = product, nextQuantity = quantity) => {
+    setOrders((items) => items.map((item) => item.id === id
+      ? new COrder(id, nextProduct, nextQuantity) : item));
   };
-
-  const getProductList = () => {
-    return menu.products.map((item) => {
-      return (
-        <MenuItem key={item.id} value={item.name}>
-          {item.name}
-        </MenuItem>
-      );
-    });
-  };
-
   const handleSelectProductChange = (event) => {
-    menu.products.forEach((item) => {
-      if (item.name === event.target.value) {
-        setProduct(item);
-      }
-    });
-
-    setOptions(undefined);
+    const selected = menu.products.find((item) => item.id === event.target.value);
+    if (selected) updateOrder(new CProduct(selected.id, selected.name, selected.price));
   };
-
-  const getOptionList = () => {
-    let optList = [];
-
-    menu.options.forEach((item) => {
-      item.valid.forEach((id) => {
-        if (id === product.id) {
-          optList.push(item.option.tag);
-}
-      });
-    });
-
-    return optList.map((item) => {
-      return (
-        <MenuItem key={item} value={item}>
-          {item}
-        </MenuItem>
-      );
-    });
-  };
-
   const handleSelectOptionChange = (event) => {
-    menu.options.forEach((item) => {
-      if (item.option.tag === event.target.value && item.valid.includes(product.id)) {
-        setOptions([item.option]);
-      }
-    });
+    const selected = availableOptions.find((item) => item.option.id === event.target.value);
+    updateOrder(new CProduct(product.id, product.name, product.price, selected ? [selected.option] : undefined));
   };
-
-  const getQuantityList = () => {
-    return quantityList.map((item) => {
-      return (
-        <MenuItem key={item} value={item}>
-          {item}
-        </MenuItem>
-      );
-    });
-  };
-
-  const handleSelQuantityChange = (event) => {
-    setQuantity(Number(event.target.value));
-  };
-
-  const handleDelOrderClick = () => {
-    setOrders((orders) => {
-      return orders.filter((item) => item.id !== id);
-    });
-  };
+  const handleSelQuantityChange = (event) => updateOrder(product, Number(event.target.value));
+  const handleDelOrderClick = () => setOrders((items) => items.filter((item) => item.id !== id));
 
   return (
         <Stack direction="row" spacing={1} sx={{ m: 1 }}>
@@ -118,12 +38,11 @@ const ProductRow = ({ id, order, setOrders }) => {
           labelId="label_product"
           id="product_select"
           sx={{ width: 145 }}
-          defaultValue=""
-          value={product.name}
+          value={menu.products.some((item) => item.id === product.id) ? product.id : ""}
           label="品項"
           onChange={handleSelectProductChange}
         >
-          {getProductList()}
+          {menu.products.map((item) => <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>)}
         </Select>
       </FormControl>
 
@@ -133,12 +52,11 @@ const ProductRow = ({ id, order, setOrders }) => {
           labelId="label_option"
           id="option_select"
           sx={{ width: 95 }}
-          defaultValue=""
-          value={options?.[0]?.tag || ""}
+          value={availableOptions.some((item) => item.option.id === options?.[0]?.id) ? options[0].id : ""}
           label="選項"
           onChange={handleSelectOptionChange}
         >
-          {getOptionList()}
+          {availableOptions.map((item) => <MenuItem key={item.option.id} value={item.option.id}>{item.option.tag}</MenuItem>)}
         </Select>
       </FormControl>
 
@@ -148,12 +66,11 @@ const ProductRow = ({ id, order, setOrders }) => {
           labelId="label_quantity"
           id="quantity_select"
           sx={{ width: 80 }}
-          defaultValue=""
           value={quantity.toString()}
           label="數量"
           onChange={handleSelQuantityChange}
         >
-          {getQuantityList()}
+          {Array.from({ length: 10 }, (_, i) => String(i + 1)).map((item) => <MenuItem key={item} value={item}>{item}</MenuItem>)}
         </Select>
       </FormControl>
 
@@ -165,3 +82,4 @@ const ProductRow = ({ id, order, setOrders }) => {
 };
 
 export default ProductRow;
+

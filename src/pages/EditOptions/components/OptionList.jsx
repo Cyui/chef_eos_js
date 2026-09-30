@@ -1,7 +1,4 @@
-import IconButton from "@mui/material/IconButton";
-import AddIcon from "@mui/icons-material/Add";
 import OptionRow from "./OptionRow";
-import { CProduct, COption } from "../../../model/invoice";
 
 const OptionList = ({ menuOptions, setMenuOptions }) => {
   return (
@@ -22,3 +19,4 @@ const OptionList = ({ menuOptions, setMenuOptions }) => {
 };
 
 export default OptionList;
+

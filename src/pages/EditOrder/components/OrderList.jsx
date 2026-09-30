@@ -2,7 +2,6 @@ import * as React from "react";
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import ProductRow from "./ProductRow";
-import { COrder } from "../../../model/invoice";
 const OrderList = ({ orders, setOrders }) => {
   return (
     <Box>
@@ -16,3 +15,4 @@ const OrderList = ({ orders, setOrders }) => {
 };
 
 export default OrderList;
+

@@ -13,6 +13,7 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { app } from "../../../firebase-config";
+import useAsyncAction from "../../../hooks/useAsyncAction";
 import { useNavigate } from "react-router-dom";
 
 function Copyright(props) {
@@ -35,36 +36,25 @@ export default function SignIn() {
   const navigate = useNavigate(); //取得 navigate
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [loginError, setLoginError] = React.useState("");
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const emailInputRef = React.useRef(null);
+  const { run, pending: isSubmitting, error: loginError } = useAsyncAction("登入失敗，請確認帳號與密碼後再試一次。");
   const handleSubmit = (event) => {
     event.preventDefault();
-    setLoginError("");
-    setIsSubmitting(true);
-
-    signInWithEmailAndPassword(
-      auth,
-      email,
-      password
-    )
-      .then((userCredential) => {
-        // Signed in
-        const user = userCredential.user;
-        console.log("user", userCredential.user);
-        navigate("/"); // navigate 到首頁
-        // ...
-      })
-      .catch(() => {
+    run(async () => {
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        navigate("/", { replace: true });
+      } catch (error) {
         setEmail("");
         setPassword("");
-        setLoginError("登入失敗，請確認帳號與密碼後再試一次。");
-        emailInputRef.current?.focus();
-      })
-      .finally(() => {
-        setIsSubmitting(false);
-      });
+        // Focus after the pending state has re-enabled the input.
+        throw error;
+      }
+    });
   };
+  React.useEffect(() => {
+    if (!isSubmitting && loginError) emailInputRef.current?.focus();
+  }, [isSubmitting, loginError]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -131,3 +121,4 @@ export default function SignIn() {
     </ThemeProvider>
   );
 }
+

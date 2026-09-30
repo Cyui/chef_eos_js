@@ -1,6 +1,5 @@
 import * as React from "react";
 import MenuRow from "./MenuRow";
-import { CProduct } from "../../../model/invoice";
 
 const MenuList = ({ menuProducts, setMenuProducts }) => {
   return (
@@ -13,3 +12,4 @@ const MenuList = ({ menuProducts, setMenuProducts }) => {
 };
 
 export default MenuList;
+

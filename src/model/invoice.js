@@ -85,35 +85,24 @@ class CInvoice {
       return this.total - this.info.deposit;
     }
 
-    return this.total + this.discount;
+    return this.total;
   }
 
   add(product, quantity) {
-    let found = false;
-
-    this.orders.forEach((order, index, array) => {
-      if (JSON.stringify(order.product) === JSON.stringify(product)) {
-        array[index].quantity += quantity;
-
-        if (array[index].quantity <= 0) {
-          array.splice(index, 1);
-        }
-
-        found = true;
-      }
-    });
-
-    if (found === false) {
+    const signature = JSON.stringify(product);
+    const index = this.orders.findIndex((order) => JSON.stringify(order.product) === signature);
+    if (index < 0) {
       this.orders.push(new COrder(v4(), product, quantity));
+      return;
     }
+    const order = this.orders[index];
+    order.quantity += quantity;
+    if (order.quantity <= 0) this.orders.splice(index, 1);
   }
 
   delete(product) {
-    this.orders.forEach((order, index, array) => {
-      if (JSON.stringify(order.product) === JSON.stringify(product)) {
-        array.splice(index, 1);
-      }
-    });
+    const signature = JSON.stringify(product);
+    this.orders = this.orders.filter((order) => JSON.stringify(order.product) !== signature);
   }
 
   submit() {
@@ -132,7 +121,7 @@ class CInvoice {
 }
 
 const invoiceFromObject = (obj) => {
-  let invoice = new CInvoice();
+  const invoice = new CInvoice();
 
   if (obj) {
     invoice.id = obj.id;
@@ -171,3 +160,4 @@ const invoiceFromObject = (obj) => {
 };
 
 export { COption, CProduct, COrder, CInfo, CInvoice, invoiceFromObject };
+

@@ -1,4 +1,3 @@
-import { CInvoice, COption, CProduct, COrder } from "./invoice";
 import * as firebase from "./firebase";
 
 class CSummary {
@@ -15,16 +14,19 @@ class CSummary {
   }
 
   report() {
-    let list = firebase.Menu.products.map((item) => {
-      return { main: item.name, qty: 0, sub: {} };
+    const list = firebase.Menu.products.map((item) => {
+      return { main: item.name, qty: 0, sub: Object.create(null) };
     });
+
+    const byName = new Map();
+    list.forEach((item) => { if (!byName.has(item.main)) byName.set(item.main, item); });
 
     this.invoices.forEach((invoice) => {
       invoice.orders.forEach((order) => {
-        let obj = list.find((item) => item.main === order.product.name);
+        const obj = byName.get(order.product.name);
         if (obj) {
-          if (order.product.options) {
-            let tag = order.product.options[0]?.tag;
+          if (order.product.options?.length) {
+            const tag = order.product.options[0]?.tag;
 
             if (!obj.sub[tag]) {
               obj.sub[tag] = 0;
@@ -37,7 +39,7 @@ class CSummary {
       });
     });
 
-    let rows = [];
+    const rows = [];
 
     list.forEach((item) => {
       rows.push({ name: item.main, qty: item.qty, color: "black" });
@@ -52,3 +54,4 @@ class CSummary {
 }
 
 export { CSummary };
+

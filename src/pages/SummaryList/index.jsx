@@ -12,16 +12,18 @@ import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import * as Colors from "@mui/material/colors";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { selectInvoices } from "../../model/selection";
 import { CSummary } from "../../model/summary";
 import * as firebase from "../../model/firebase";
 
 const SummaryList = () => {
     const navigate = useNavigate();
 
-  const summary = new CSummary(firebase.Invoices);
+  const location = useLocation();
+  const summary = React.useMemo(() => new CSummary(selectInvoices(firebase.Invoices, location.state)), [location.state]);
   
-  let rows = summary.report();
+  const rows = React.useMemo(() => summary.report(), [summary]);
 
   return (
     <div>
@@ -34,8 +36,8 @@ const SummaryList = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.name} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+            {rows.map((row, index) => (
+              <TableRow key={`${index}-${row.name}`} sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
                 <TableCell component="th" scope="row" sx={{ color: row.color }}>
                   {row.name}
                 </TableCell>
@@ -84,3 +86,4 @@ const SummaryList = () => {
 };
 
 export default SummaryList;
+

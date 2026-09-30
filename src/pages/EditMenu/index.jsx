@@ -12,26 +12,19 @@ import { CProduct } from "../../model/invoice";
 import * as firebase from "../../model/firebase";
 import { v4 } from "uuid";
 
-export var serialNo = 0;
+import Alert from "@mui/material/Alert";
+import useAsyncAction from "../../hooks/useAsyncAction";
 
 const EditMenu = () => {
   const navigate = useNavigate();
 
-  const [menuProducts, setMenuProducts] = React.useState(
-    firebase.Menu.products.map((item) => new CProduct(item.id, item.name, item.price)) || []
-  );
-const menuProductsRef = React.useRef([]);
+  const [menuProducts, setMenuProducts] = React.useState(() => firebase.Menu.products.map((item) => new CProduct(item.id, item.name, item.price)));
+  const { run, pending, error } = useAsyncAction("儲存失敗，請稍後再試。");
 
-  React.useEffect(() => {
-    menuProductsRef.current = menuProducts;
-  }, [menuProducts]);
-
-  const handleSubmitClick = () => {
-        firebase.Menu.products = menuProductsRef.current;
-    firebase.pushMenuToFirebase(firebase.Menu);
-
+  const handleSubmitClick = () => run(async () => {
+    await firebase.pushMenuToFirebase({ ...firebase.Menu, products: menuProducts });
     navigate(-1);
-  };
+  });
 
   const handleCancelClick = () => {
     navigate("/");
@@ -43,6 +36,7 @@ const menuProductsRef = React.useRef([]);
 
   return (
     <Box sx={{ m: 0 }}>
+      {error && <Alert severity="error">{error}</Alert>}
       <div>
         <MenuList menuProducts={menuProducts} setMenuProducts={setMenuProducts} />
 
@@ -63,13 +57,13 @@ const menuProductsRef = React.useRef([]);
               sx={{ m: 1 }}
               aria-label="return"
               color="primary"
-              onClick={handleReturnClick}
+              onClick={handleReturnClick} disabled={pending}
             >
               <KeyboardReturnIcon />
             </IconButton>
           </div>
           <div>
-            <IconButton sx={{ m: 1 }} aria-label="cancel" color="error" onClick={handleCancelClick}>
+            <IconButton sx={{ m: 1 }} aria-label="cancel" color="error" onClick={handleCancelClick} disabled={pending}>
               <CloseIcon />
             </IconButton>
           </div>
@@ -79,6 +73,7 @@ const menuProductsRef = React.useRef([]);
               aria-label="submit"
               color="success"
               onClick={handleSubmitClick}
+              disabled={pending}
             >
               <DoneIcon />
             </IconButton>
@@ -90,3 +85,4 @@ const menuProductsRef = React.useRef([]);
 };
 
 export default EditMenu;
+

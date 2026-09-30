@@ -11,42 +11,24 @@ import AddIcon from "@mui/icons-material/Add";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
-import dayjs from "dayjs";
-import "dayjs/locale/zh-tw";
-import { CInfo, COrder } from "../../../model/invoice";
+import dayjs from "../../../model/date";
+import { COrder } from "../../../model/invoice";
 
 const EditInfo = ({ setOrders, info, setInfo }) => {
-  dayjs.locale("zh-tw");
 
   const statusList = ["待處理", "已完成"];
   const deliverList = ["自取", "宅配"];
 
-  const [sn, setNo] = React.useState(info.sn);
-  const [name, setName] = React.useState(info.name);
-  const [phone, setPhone] = React.useState(info.phone);
-  const [date, setDate] = React.useState(dayjs(info.date, "YYYY/MM/DD"));
-  const [time, setTime] = React.useState(dayjs(info.time, "HH:mm"));
-  const [note, setNote] = React.useState(info.note);
-  const [deposit, setDeposit] = React.useState(info.deposit);
-  const [deliver, setDeliver] = React.useState(info.deliver || "自取");
-  const [status, setStatus] = React.useState(info.status || "待處理");
-
-  React.useEffect(() => {}, []);
-
+  const date = info.date ? dayjs(info.date, "YYYY/MM/DD", true) : null;
+  const time = info.time ? dayjs(info.time, "HH:mm", true) : null;
   const handleSelStatusChange = (event) => {
-    setStatus(event.target.value);
-    setInfo((info) => {
-      return { ...info, status: event.target.value };
-    });
+    const status = event.target.value;
+    setInfo((info) => ({ ...info, status }));
   };
-
   const handleSelDeliverChange = (event) => {
-    setDeliver(event.target.value);
-    setInfo((info) => {
-      return { ...info, deliver: event.target.value };
-    });
+    const deliver = event.target.value;
+    setInfo((info) => ({ ...info, deliver }));
   };
-
   const handleAddClick = () => {
     setOrders((order) => {
       return [...order, new COrder()];
@@ -54,10 +36,10 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
   };
 
   function convertToDateString(date) {
-    return dayjs(date).format("YYYY/MM/DD");
+    return date?.isValid() ? date.format("YYYY/MM/DD") : "";
   }
   function convertToTimeString(time) {
-    return dayjs(time).format("HH:mm");
+    return time?.isValid() ? time.format("HH:mm") : "";
   }
 
   return (
@@ -70,9 +52,8 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
             label="編號"
             variant="outlined"
             fullWidth
-            value={sn}
+            value={info.sn}
             onChange={(e) => {
-              setNo(e.target.value);
               setInfo((info) => {
                 return { ...info, sn: e.target.value };
               });
@@ -87,7 +68,7 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
               labelId="label_status"
               id="status_select"
               sx={{ width: 164 }}
-              value={status}
+              value={info.status}
               label="訂單狀態"
               onChange={handleSelStatusChange}
             >
@@ -111,9 +92,8 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
             label="姓名"
             variant="outlined"
             fullWidth
-            value={name}
+            value={info.name}
             onChange={(e) => {
-              setName(e.target.value);
               setInfo((info) => {
                 return { ...info, name: e.target.value };
               });
@@ -127,9 +107,8 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
             label="電話"
             variant="outlined"
             fullWidth
-            value={phone}
+            value={info.phone}
             onChange={(e) => {
-              setPhone(e.target.value);
               setInfo((info) => {
                 return { ...info, phone: e.target.value };
               });
@@ -145,7 +124,6 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
             sx={{ width: 164 }}
             value={date}
             onChange={(value) => {
-              setDate(value);
               setInfo((info) => {
                 return { ...info, date: convertToDateString(value || null) };
               });
@@ -156,7 +134,6 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
             sx={{ width: 164 }}
             value={time}
             onChange={(value) => {
-              setTime(value);
               setInfo((info) => {
                 return { ...info, time: convertToTimeString(value || null) };
               });
@@ -173,7 +150,7 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
               labelId="label_deliver"
               id="deliver_select"
               sx={{ width: 164 }}
-              value={deliver}
+              value={info.deliver}
               label="取貨方式"
               onChange={handleSelDeliverChange}
             >
@@ -194,9 +171,8 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
             label="訂金"
             variant="outlined"
             fullWidth
-            value={deposit}
+            value={info.deposit}
             onChange={(e) => {
-              setDeposit(Number(e.target.value) || 0);
               setInfo((info) => {
                 return { ...info, deposit: Number(e.target.value) || 0 };
               });
@@ -213,9 +189,8 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
             label="備註"
             variant="outlined"
             fullWidth
-            value={note}
+            value={info.note}
             onChange={(e) => {
-              setNote(e.target.value);
               setInfo((info) => {
                 return { ...info, note: e.target.value };
               });
@@ -232,3 +207,4 @@ const EditInfo = ({ setOrders, info, setInfo }) => {
 };
 
 export default EditInfo;
+
