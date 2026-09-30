@@ -1,5 +1,4 @@
 import * as React from "react";
-import ReactDOM from "react-dom/client";
 import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
@@ -13,7 +12,7 @@ import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 const SettingMenu = () => {
   const navigate = useNavigate();
 
-  const handleSetMenuProductslick = () => {
+  const handleSetMenuProductsClick = () => {
     navigate("./menu");
   };
 
@@ -39,7 +38,7 @@ const SettingMenu = () => {
             color="primary"
             size="large"
             fullWidth
-            onClick={handleSetMenuProductslick}
+            onClick={handleSetMenuProductsClick}
             startIcon={<MenuIcon />}
           >
             設定菜單品項
@@ -54,20 +53,6 @@ const SettingMenu = () => {
             startIcon={<QuestionMarkIcon />}
           >
             設定菜單選項
-          </Button>
-          <Button
-            sx={{ py: 2 }}
-            variant="contained"
-            color="primary"
-            size="large"
-            fullWidth
-            onClick={() => {
-              console.log("Test");
-
-              
-            }}
-          >
-            測試
           </Button>
         </Stack>
 
@@ -94,3 +79,4 @@ const SettingMenu = () => {
 };
 
 export default SettingMenu;
+

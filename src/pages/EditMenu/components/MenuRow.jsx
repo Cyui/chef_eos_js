@@ -1,4 +1,3 @@
-import * as React from "react";
 import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
 import IconButton from "@mui/material/IconButton";
@@ -6,27 +5,10 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { CProduct } from "../../../model/invoice";
 
 const MenuRow = ({ product, setMenuProducts }) => {
-  const [prodName, setProdName] = React.useState(product.name);
-  const [prodPrice, setProdPrice] = React.useState(product.price);
-  const productRef = React.useRef(product);
-
-  React.useEffect(() => {
-    productRef.current.name = prodName;
-    productRef.current.price = prodPrice;
-
-    pushMenuProduct();
-  }, [prodName, prodPrice]);
-
-  const pushMenuProduct = () => {
-    setMenuProducts((products) => {
-      return products.map((item) => {
-        if (item.id === product.id) {
-          item.name = productRef.current.name;
-          item.price = productRef.current.price;
-        }
-        return item;
-      });
-    });
+  const updateProduct = (changes) => {
+    setMenuProducts((products) => products.map((item) => item.id === product.id
+      ? new CProduct(item.id, changes.name ?? item.name, changes.price ?? item.price)
+      : item));
   };
 
   return (
@@ -35,13 +17,13 @@ const MenuRow = ({ product, setMenuProducts }) => {
         <div>
           <TextField
             sx={{ width: 164 }}
-            id="textName"
+            id={`textName-${product.id}`}
             label="品項"
             variant="outlined"
-            //fullWidth
-            value={prodName}
+
+            value={product.name}
             onChange={(e) => {
-              setProdName(e.target.value);
+              updateProduct({ name: e.target.value });
                           }}
           />
         </div>
@@ -49,13 +31,13 @@ const MenuRow = ({ product, setMenuProducts }) => {
         <div>
           <TextField
             sx={{ width: 140 }}
-            id="textPrice"
+            id={`textPrice-${product.id}`}
             label="價格"
             variant="outlined"
-            //fullWidth
-            value={prodPrice}
+
+            value={product.price}
             onChange={(e) => {
-              setProdPrice(Number(e.target.value) || 0);
+              updateProduct({ price: Number(e.target.value) || 0 });
                           }}
           />
         </div>
@@ -76,3 +58,4 @@ const MenuRow = ({ product, setMenuProducts }) => {
 };
 
 export default MenuRow;
+

@@ -17,61 +17,50 @@ import DialogTitle from "@mui/material/DialogTitle";
 import EditInfo from "./components/EditInfo";
 import OrderList from "./components/OrderList";
 import { useNavigate, useLocation } from "react-router-dom";
-import { COrder, CInfo, CInvoice } from "../../model/invoice";
+import { invoiceFromObject } from "../../model/invoice";
 import * as firebase from "../../model/firebase";
 
-export var serialNo = 0;
+import Alert from "@mui/material/Alert";
+import useAsyncAction from "../../hooks/useAsyncAction";
 
 const EditOrder = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const invoice = React.useRef(
-    firebase.Invoices.find((item) => item.id === location.state) || new CInvoice()
-  );
+  const [draft] = React.useState(() => invoiceFromObject(
+    firebase.Invoices.find((item) => item.id === location.state)
+  ));
+  const invoice = React.useRef(draft);
+  const { run, pending, error } = useAsyncAction("儲存失敗，請稍後再試。");
 
   const [info, setInfo] = React.useState(invoice.current.info);
   const [orders, setOrders] = React.useState(invoice.current.orders);
   const [discount, setDiscount] = React.useState(invoice.current.discount);
-  const [total, setTotal] = React.useState(invoice.current.total);
-  const [finalpayment, setFinalpayment] = React.useState(invoice.current.finalpayment);
+  const total = orders.reduce((sum, order) => sum + order.subtotal, 0) + discount;
+  const finalpayment = total - info.deposit;
   const [open, setOpen] = React.useState(false);
   
-  React.useEffect(() => {
-    invoice.current.info = info;
-    invoice.current.orders = orders;
-    invoice.current.discount = discount;
-
-    updateInvoice();
-  }, [info, orders, discount]);
-
-  const updateInvoice = () => {
-    setTotal(invoice.current.total);
-    setFinalpayment(invoice.current.finalpayment);
-  };
-
-  const handleSubmitClick = () => {
-if (invoice.current.orders.find((item) => item.product.id === "")) {
-      handleClickOpen();
+  const handleSubmitClick = () => run(async () => {
+    if (orders.some((item) => item.product.id === "")) {
+      setOpen(true);
       return;
     }
-
-    updateInvoice();
-
-    if (invoice.current.id === "") {
-      invoice.current.no = firebase.LastInvoiceNO + 1;
-      invoice.current.submit();
+    if (orders.length === 0) {
+      setOpen(true);
+      return;
     }
-
-    if (invoice.current.doc === "") {
-      firebase.pushInvoiceToFirebase(invoice.current);
+    const saved = invoiceFromObject({ ...invoice.current, info, orders, discount });
+    if (!saved.id) {
+      saved.no = firebase.LastInvoiceNO + 1;
+      saved.submit();
+    }
+    if (!saved.doc) {
+      await firebase.pushInvoiceToFirebase(saved);
     } else {
-      firebase.updateInvoiceToFirebase(invoice.current, invoice.current.doc);
-      firebase.updateInvoices(invoice.current);
+      await firebase.updateInvoiceToFirebase(saved, saved.doc);
     }
-
     navigate(-1);
-  };
+  });
 
   const handleCancelClick = () => {
     navigate("/");
@@ -81,16 +70,13 @@ if (invoice.current.orders.find((item) => item.product.id === "")) {
     navigate(-1);
   };
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
   const handleClose = () => {
     setOpen(false);
   };
 
   return (
     <Box sx={{ m: 0 }}>
+      {error && <Alert severity="error">{error}</Alert>}
               <Typography variant="h6" gutterBottom sx={{ m: 1 }}>
           {invoice.current.doc || "New"}
         </Typography>
@@ -115,12 +101,12 @@ if (invoice.current.orders.find((item) => item.product.id === "")) {
         </Stack>
         <Stack direction="row" spacing={1} sx={{ mb: 10 }}>
                     <div>
-            <IconButton sx={{ m: 1 }} aria-label="return" color="primary" onClick={handleReturnClick}>
+            <IconButton sx={{ m: 1 }} aria-label="return" color="primary" onClick={handleReturnClick} disabled={pending}>
               <KeyboardReturnIcon />
             </IconButton>
           </div>
           <div>
-            <IconButton sx={{ m: 1 }} aria-label="cancel" color="error" onClick={handleCancelClick}>
+            <IconButton sx={{ m: 1 }} aria-label="cancel" color="error" onClick={handleCancelClick} disabled={pending}>
               <CloseIcon />
             </IconButton>
           </div>
@@ -130,6 +116,7 @@ if (invoice.current.orders.find((item) => item.product.id === "")) {
               aria-label="submit"
               color="success"
               onClick={handleSubmitClick}
+              disabled={pending}
             >
               <DoneIcon />
             </IconButton>
@@ -144,7 +131,7 @@ if (invoice.current.orders.find((item) => item.product.id === "")) {
       >
         <DialogTitle id="alert-dialog-title">{"Error"}</DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">有新增的品項尚未選擇</DialogContentText>
+          <DialogContentText id="alert-dialog-description">請至少新增一個品項，並確認所有品項已選擇</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} autoFocus>
@@ -157,3 +144,4 @@ if (invoice.current.orders.find((item) => item.product.id === "")) {
 };
 
 export default EditOrder;
+

@@ -19,9 +19,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-router-dom": "^7.18.4",
-    "react-usestateref": "^2.0.0",
-    "uuid": "^14.0.2",
-    "web-vitals": "^6.2.2"
+    "uuid": "^14.0.2"
   },
   "scripts": {
     "start": "vite",

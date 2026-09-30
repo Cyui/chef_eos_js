@@ -1,180 +1,142 @@
 import { app } from "../firebase-config";
 import { getAuth, signOut } from "firebase/auth";
 import {
-  getFirestore,
-  collection,
-  doc,
-  setDoc,
-  getDoc,
-  getDocs,
-  query,
-  orderBy,
-  limit,
-  updateDoc,
-  addDoc,
-  deleteDoc,
-  where,
-  FieldPath,
-
+  getFirestore, collection, doc, setDoc, getDoc, getDocs,
+  query, orderBy, limit, updateDoc, deleteDoc,
 } from "firebase/firestore";
-import { CInvoice, invoiceFromObject } from "./invoice";
+import { invoiceFromObject } from "./invoice";
 import { CMenu, menuFromObject } from "./chefmenu";
 
-// Initialize Cloud Firestore and get a reference to the service
 export const db = getFirestore(app);
+const auth = getAuth(app);
+const DATA_YEAR = "2025y";
+export let Invoices = [];
+export let LastInvoiceNO = 0;
+export let Menu = new CMenu();
+export let Mail = "";
+let session = 0;
+let userId = null;
+let dashboardRequest = null;
+let invoiceRequest = null;
 
-export var Invoices = [];
-export var LastInvoiceNO = 0;
-export var Menu = new CMenu();
+export function initializeUser(user) {
+  const nextId = user?.uid || null;
+  if (nextId === userId && (user?.email || "") === Mail) return;
+  userId = nextId;
+  session += 1;
+  Mail = user?.email || "";
+  Invoices = [];
+  LastInvoiceNO = 0;
+  Menu = new CMenu();
+  dashboardRequest = null;
+  invoiceRequest = null;
+}
 
-const auth = getAuth();
-export var Mail = "";
+function currentSession() {
+  if (!auth.currentUser || !Mail || auth.currentUser.email !== Mail) {
+    throw new Error("Authentication required");
+  }
+  return { email: Mail, version: session };
+}
 
-export function setInvoices(invoices) {
-  Invoices = [...invoices];
+function isCurrent({ email, version }) {
+  return email === Mail && version === session;
+}
+
+function invoiceCollection(email) {
+  return collection(db, email, "eos_invioces", DATA_YEAR);
+}
+
+// Class instances and optional undefined fields need plain Firestore data.
+function plainData(value) {
+  return JSON.parse(JSON.stringify(value));
 }
 
 export function updateInvoices(invoice) {
-  Invoices.forEach((item, index, array) => {
-    if (item.id === invoice.id) {
-      array[index] = invoice;
-    }
-  });
-}
-
-const invoiceConverter = {
-  toFirestore: (invoice) => {
-    return invoice;
-  },
-  fromFirestore: (snapshot, options) => {
-    const data = snapshot.data(options);
-    return invoiceFromObject(data);
-  },
-};
-
-const menuConverter = {
-  toFirestore: (menu) => {
-    return menu;
-  },
-  fromFirestore: (snapshot, options) => {
-    const data = snapshot.data(options);
-    return menuFromObject(data);
-  },
-};
-
-export function getUserInfoFromFirebase() {
-  if (auth !== null) {
-    Mail = auth.currentUser.email;
-  }
+  const index = Invoices.findIndex((item) => item.id === invoice.id);
+  Invoices = index < 0
+    ? [...Invoices, invoice]
+    : Invoices.map((item, i) => i === index ? invoice : item);
 }
 
 export function logOut() {
-  if (auth !== null) {
-    signOut(auth)
-      .then(function () {
-        // Sign-out successful.
-        console.log("logout success");
-      })
-      .catch(function (error) {
-        // An error happened.
-        console.log("logout error");
-      });
-  }
+  return signOut(auth);
 }
 
 export async function pushInvoiceToFirebase(invoice) {
-  // const ref = doc(collection(db, Mail, "eos_invioces", "2025y"))
-  const ref = collection(db, Mail, "eos_invioces", "2025y");
-
-  const docref = await addDoc(ref, JSON.parse(JSON.stringify(invoice)));
-
-  await updateDoc(doc(ref, docref.id), { doc: docref.id });
+  const owner = currentSession();
+  const ref = doc(invoiceCollection(owner.email));
+  const saved = invoiceFromObject({ ...invoice, doc: ref.id });
+  // Save the generated document ID in the same write, rather than a second update.
+  await setDoc(ref, plainData(saved));
+  if (isCurrent(owner)) {
+    invoice.doc = ref.id;
+    updateInvoices(saved);
+    LastInvoiceNO = Math.max(LastInvoiceNO, saved.no);
+  }
+  return saved;
 }
 
 export async function pushMenuToFirebase(menu) {
-  const ref = doc(db, Mail, "eos_menu", "2025y", "current");
-  //const ref = collection(db, Mail, "eos_menu", "2025y");
-
-  const docref = await setDoc(ref, JSON.parse(JSON.stringify(menu)));
+  const owner = currentSession();
+  const data = plainData(menu);
+  await setDoc(doc(db, owner.email, "eos_menu", DATA_YEAR, "current"), data);
+  if (isCurrent(owner)) Menu = menuFromObject(data);
 }
 
 export async function updateInvoiceToFirebase(invoice, docid) {
-  const ref = doc(db, Mail, "eos_invioces", "2025y", docid);
-
-  await updateDoc(ref, JSON.parse(JSON.stringify(invoice)));
+  const owner = currentSession();
+  const saved = invoiceFromObject({ ...invoice, doc: docid });
+  await updateDoc(doc(invoiceCollection(owner.email), docid), plainData(saved));
+  if (isCurrent(owner)) updateInvoices(saved);
+  return saved;
 }
 
-export async function pullAllInvoiceFromFirebase() {
-  let invoices = [];
-
-  const ref = collection(db, Mail, "eos_invioces", "2025y").withConverter(
-    invoiceConverter
-  );
-
-  const q = query(ref, orderBy("info.sn", "desc"));
-  const querySnapshot = await getDocs(q);
-  querySnapshot.forEach((doc) => {
-    // doc.data() is never undefined for query doc snapshots
-    //console.log(doc.id, " => ", doc.data());
-    let invoice = doc.data();
-    invoice.doc = doc.id;
-    invoices = [...invoices, invoice];
-  });
-
-  Invoices = invoices;
+export function pullAllInvoiceFromFirebase() {
+  const owner = currentSession();
+  if (invoiceRequest?.version === owner.version) return invoiceRequest.promise;
+  const promise = (async () => {
+    const snapshot = await getDocs(query(invoiceCollection(owner.email), orderBy("info.sn", "desc")));
+    const invoices = snapshot.docs.map((item) => invoiceFromObject({ ...item.data(), doc: item.id }));
+    if (isCurrent(owner)) Invoices = invoices;
+    return invoices;
+  })();
+  invoiceRequest = { version: owner.version, promise };
+  const clear = () => { if (invoiceRequest?.promise === promise) invoiceRequest = null; };
+  promise.then(clear, clear);
+  return promise;
 }
 
 export async function pullMenuFromFirebase() {
-  let menu = new CMenu();
-
-  const ref = doc(db, Mail, "eos_menu", "2025y", "current").withConverter(
-    menuConverter
-  );
-
-  const docSnap = await getDoc(ref);
-  if (docSnap.exists()) {
-    // Convert to City object
-    menu = docSnap.data();
-    // Use a City instance method
-    //console.log(doc);
-  } else {
-    console.log("No such document!");
-  }
-
-  Menu = menu;
+  const owner = currentSession();
+  const snapshot = await getDoc(doc(db, owner.email, "eos_menu", DATA_YEAR, "current"));
+  const menu = snapshot.exists() ? menuFromObject(snapshot.data()) : new CMenu();
+  if (isCurrent(owner)) Menu = menu;
+  return menu;
 }
 
-// export async function queryInvoiceBySnFromFirebase(sn) {
-
-//   const ref = collection(db, Mail, "eos_invioces", "2025y").withConverter(invoiceConverter);
-
-//   const q = query(ref, where(new FieldPath('info', 'sn'), '==', sn))
-
-//   const querySnapshot = await getDocs(q);
-//   querySnapshot.forEach((doc) => {
-//     // doc.data() is never undefined for query doc snapshots
-//     console.log(doc.id, " => ", doc.data());
-//   });
-// }
-
 export async function deleteInvoiceFromFirebase(docid) {
-  const ref = doc(db, Mail, "eos_invioces", "2025y", docid);
-
-  await deleteDoc(ref);
+  const owner = currentSession();
+  await deleteDoc(doc(invoiceCollection(owner.email), docid));
+  if (isCurrent(owner)) Invoices = Invoices.filter((item) => item.doc !== docid);
 }
 
 export async function getLastInvoiceFromFirebase() {
-  let no = 0;
+  const owner = currentSession();
+  const snapshot = await getDocs(query(invoiceCollection(owner.email), orderBy("no", "desc"), limit(1)));
+  const no = snapshot.docs[0]?.data().no || 0;
+  if (isCurrent(owner)) LastInvoiceNO = no;
+  return no;
+}
 
-  const ref = collection(db, Mail, "eos_invioces", "2025y");
-  const q = query(ref, orderBy("no", "desc"), limit(1));
-  const querySnapshot = await getDocs(q);
-  querySnapshot.forEach((doc) => {
-    // doc.data() is never undefined for query doc snapshots
-    //console.log(doc.id, " => ", doc.data());
-    no = doc.data().no;
-  });
-
-  LastInvoiceNO = no;
-  //console.log(LastInvoiceNO)
+export function loadDashboardData() {
+  const owner = currentSession();
+  if (dashboardRequest?.version === owner.version) return dashboardRequest.promise;
+  const promise = Promise.all([
+    pullAllInvoiceFromFirebase(), getLastInvoiceFromFirebase(), pullMenuFromFirebase(),
+  ]);
+  dashboardRequest = { version: owner.version, promise };
+  const clear = () => { if (dashboardRequest?.promise === promise) dashboardRequest = null; };
+  promise.then(clear, clear);
+  return promise;
 }

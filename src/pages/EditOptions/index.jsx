@@ -12,32 +12,19 @@ import { COption } from "../../model/invoice";
 import * as firebase from "../../model/firebase";
 import { v4 } from "uuid";
 
-export var serialNo = 0;
+import Alert from "@mui/material/Alert";
+import useAsyncAction from "../../hooks/useAsyncAction";
 
 const EditOptions = () => {
   const navigate = useNavigate();
 
-  const [menuOptions, setMenuOptions] = React.useState(
-    firebase.Menu.options.map((item) => {
-      return {
-        option: new COption(item.option.id, item.option.tag, item.option.diff),
-        valid: item.valid,
-      };
-    }) || []
-  );
+  const [menuOptions, setMenuOptions] = React.useState(() => firebase.Menu.options.map((item) => ({ option: new COption(item.option.id, item.option.tag, item.option.diff), valid: [...item.valid] })));
+  const { run, pending, error } = useAsyncAction("儲存失敗，請稍後再試。");
 
-  const menuOptionsRef = React.useRef([]);
-
-  React.useEffect(() => {
-    menuOptionsRef.current = menuOptions;
-  }, [menuOptions]);
-
-  const handleSubmitClick = () => {
-        firebase.Menu.options = menuOptionsRef.current;
-    firebase.pushMenuToFirebase(firebase.Menu);
-
+  const handleSubmitClick = () => run(async () => {
+    await firebase.pushMenuToFirebase({ ...firebase.Menu, options: menuOptions });
     navigate(-1);
-  };
+  });
 
   const handleCancelClick = () => {
     navigate("/");
@@ -49,6 +36,7 @@ const EditOptions = () => {
 
   return (
     <Box sx={{ m: 0 }}>
+      {error && <Alert severity="error">{error}</Alert>}
       <div>
         <OptionList menuOptions={menuOptions} setMenuOptions={setMenuOptions} />
 
@@ -75,13 +63,13 @@ const EditOptions = () => {
               sx={{ m: 1 }}
               aria-label="return"
               color="primary"
-              onClick={handleReturnClick}
+              onClick={handleReturnClick} disabled={pending}
             >
               <KeyboardReturnIcon />
             </IconButton>
           </div>
           <div>
-            <IconButton sx={{ m: 1 }} aria-label="cancel" color="error" onClick={handleCancelClick}>
+            <IconButton sx={{ m: 1 }} aria-label="cancel" color="error" onClick={handleCancelClick} disabled={pending}>
               <CloseIcon />
             </IconButton>
           </div>
@@ -91,6 +79,7 @@ const EditOptions = () => {
               aria-label="submit"
               color="success"
               onClick={handleSubmitClick}
+              disabled={pending}
             >
               <DoneIcon />
             </IconButton>
@@ -102,3 +91,4 @@ const EditOptions = () => {
 };
 
 export default EditOptions;
+

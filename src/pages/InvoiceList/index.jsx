@@ -19,23 +19,22 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import * as firebase from "../../model/firebase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { CInvoice } from "../../model/invoice";
+import { selectInvoices } from "../../model/selection";
+import Alert from "@mui/material/Alert";
+import useAsyncAction from "../../hooks/useAsyncAction";
 
 export default function InvoiceList() {
     const navigate = useNavigate();
 
-  const [dense, setDense] = React.useState(false);
-  const [secondary, setSecondary] = React.useState(true);
+  const location = useLocation();
+  const { run, pending, error } = useAsyncAction("刪除失敗，請稍後再試。");
 
   const [open, setOpen] = React.useState(false);
   const invoice = React.useRef(new CInvoice());
 
-  const [invoices, setInvoices] = React.useState(firebase.Invoices);
-
-  React.useEffect(() => {
-    setInvoices([...invoices]);
-  }, []);
+  const [invoices, setInvoices] = React.useState(() => selectInvoices(firebase.Invoices, location.state));
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -45,21 +44,18 @@ export default function InvoiceList() {
     setOpen(false);
   };
 
-  const handleOK = () => {
-    setInvoices((items) => {
-      return items.filter((item) => item.doc !== invoice.current.doc);
-    });
-
-    firebase.deleteInvoiceFromFirebase(invoice.current.doc);
-
+  const handleOK = () => run(async () => {
+    await firebase.deleteInvoiceFromFirebase(invoice.current.doc);
+    setInvoices((items) => items.filter((item) => item.doc !== invoice.current.doc));
     setOpen(false);
-  };
+  });
 
   return (
     <Box sx={{ flexGrow: 1, maxWidth: 752, m: 0 }}>
+      {error && <Alert severity="error">{error}</Alert>}
       <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
-          <List dense={dense}>
+          <List>
             {invoices.map((value) => (
               <ListItem
                 secondaryAction={
@@ -88,14 +84,14 @@ export default function InvoiceList() {
                 </ListItemAvatar>
                 <ListItemText
                   primary={`[${value.info.sn}] ${value.info.name} ${value.info.phone} <${value.info.status}>`}
-                  secondary={secondary ? `${value.info.note}` : null}
+                  secondary={value.info.note}
                 />
               </ListItem>
             ))}
           </List>
           <Dialog
             open={open}
-            onClose={handleClose}
+            onClose={pending ? undefined : handleClose}
             aria-labelledby="alert-dialog-title"
             aria-describedby="alert-dialog-description"
           >
@@ -106,8 +102,8 @@ export default function InvoiceList() {
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleClose}>取消</Button>
-              <Button onClick={handleOK} autoFocus>
+              <Button onClick={handleClose} disabled={pending}>取消</Button>
+              <Button onClick={handleOK} disabled={pending} autoFocus>
                 確定
               </Button>
             </DialogActions>
@@ -141,3 +137,4 @@ export default function InvoiceList() {
     </Box>
   );
 }
+

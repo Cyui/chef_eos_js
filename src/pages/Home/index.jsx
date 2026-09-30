@@ -1,5 +1,4 @@
 import * as React from "react";
-import ReactDOM from "react-dom/client";
 import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
@@ -11,26 +10,24 @@ import SearchIcon from "@mui/icons-material/Search";
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Typography from "@mui/material/Typography";
+import Alert from "@mui/material/Alert";
 import * as firebase from "../../model/firebase";
 
 const Home = () => {
   const navigate = useNavigate();
 
-  firebase.getUserInfoFromFirebase();
-  firebase.pullAllInvoiceFromFirebase();
-  firebase.getLastInvoiceFromFirebase();
-  firebase.pullMenuFromFirebase();
+  const [error, setError] = React.useState("");
 
   const handleNewClick = () => {
     navigate("../edit");
   };
 
   const handleSummaryClick = () => {
-    navigate("../summary", { state: firebase.Invoices });
+    navigate("../summary");
   };
 
   const handleListClick = () => {
-    navigate("../list", { state: firebase.Invoices });
+    navigate("../list");
   };
 
   const handleQueryClick = () => {
@@ -41,13 +38,18 @@ const Home = () => {
     navigate("../setting");
   };
 
-  const handleLogoutClick = () => {
-    firebase.logOut();
+  const handleLogoutClick = async () => {
+    try {
+      await firebase.logOut();
+    } catch {
+      setError("登出失敗，請稍後再試。");
+    }
   };
 
   return (
     <div>
       <Box sx={{ width: "100%" }}>
+        {error && <Alert severity="error">{error}</Alert>}
         <Typography variant="h6" gutterBottom sx={{ m: 1 }}>
           {firebase.Mail}
         </Typography>
@@ -126,3 +128,4 @@ const Home = () => {
 };
 
 export default Home;
+

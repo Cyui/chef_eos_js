@@ -13,14 +13,11 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import IconButton from "@mui/material/IconButton";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
-import dayjs from "dayjs";
-import "dayjs/locale/zh-tw";
+import dayjs from "../../model/date";
 import * as firebase from "../../model/firebase";
-import { CInvoice } from "../../model/invoice";
-
-dayjs.locale("zh-tw");
-var isBetween = require("dayjs/plugin/isBetween");
-dayjs.extend(isBetween);
+import { filterInvoices } from "../../model/query";
+import Alert from "@mui/material/Alert";
+import useAsyncAction from "../../hooks/useAsyncAction";
 
 const QueryInput = () => {
   const navigate = useNavigate();
@@ -40,17 +37,7 @@ const QueryInput = () => {
   const [deliver, setDeliver] = React.useState("");
   const [status, setStatus] = React.useState("");
 
-  const dateFromRef = React.useRef(null);
-  const timeFromRef = React.useRef(null);
-  const dateToRef = React.useRef(null);
-  const timeToRef = React.useRef(null);
-
-  React.useEffect(() => {
-    dateFromRef.current = dateFrom;
-    timeFromRef.current = timeFrom;
-    dateToRef.current = dateTo;
-    timeToRef.current = timeTo;
-  }, [dateFrom, timeFrom, dateTo, timeTo]);
+  const { run, pending, error } = useAsyncAction("查詢失敗，請確認日期時間範圍或稍後再試。");
 
   const handleSelStatusChange = (event) => {
     setStatus(event.target.value);
@@ -64,71 +51,17 @@ const QueryInput = () => {
     setNoteOpt(event.target.value);
   };
 
-  const getFilterResult = () => {
-    firebase.pullAllInvoiceFromFirebase();
-    let result = [...firebase.Invoices];
-
-    if (sn) {
-      result = result.filter((item) => item.info.sn.includes(sn));
-    }
-
-    if (status) {
-      result = result.filter((item) => item.info.status.includes(status));
-    }
-
-    if (phone) {
-      result = result.filter((item) => item.info.name.includes(name));
-    }
-
-    if (phone) {
-      result = result.filter((item) => item.info.phone.includes(phone));
-    }
-
-    if (deliver) {
-      result = result.filter((item) => item.info.deliver.includes(deliver));
-    }
-
-    if (noteOpt) {
-      result = result.filter((item) => item.info.note !== "");
-    }
-
-    if (dateFrom) {
-      let dtFrom =
-        convertToDateString(dateFromRef.current) + "T" + convertToTimeString(timeFromRef.current);
-      let dtTo =
-        convertToDateString(dateToRef.current) + "T" + convertToTimeString(timeToRef.current);
-
-      result = result.filter((item) => {
-        let dt = item.info.date + "T" + item.info.time;
-
-        // Parameter 4 is a string with two characters; '[' means inclusive, '(' exclusive
-        // '()' excludes start and end date (default)
-        // '[]' includes start and end date
-        // '[)' includes the start date but excludes the stop
-        return dayjs(dt).isBetween(dtFrom, dtTo, null, "[)");
-      });
-    }
-
-    return firebase.setInvoices(result);
-  };
-
-  const handleQuerySummaryClick = () => {
-    navigate("../summary", { state: getFilterResult() });
-  };
-
-  const handleQueryInvoiceClick = () => {
-    navigate("../list", { state: getFilterResult() });
-  };
-
-  function convertToDateString(date) {
-    return dayjs(date).format("YYYY/MM/DD");
-  }
-  function convertToTimeString(time) {
-    return dayjs(time).format("HH:mm");
-  }
+  const handleQuery = (path) => run(async () => {
+    const invoices = await firebase.pullAllInvoiceFromFirebase();
+    const result = filterInvoices(invoices, { sn, name, phone, status, deliver, noteOpt, dateFrom, timeFrom, dateTo, timeTo });
+    navigate(path, { state: { invoiceIds: result.map((item) => item.id) } });
+  });
+  const handleQuerySummaryClick = () => handleQuery("../summary");
+  const handleQueryInvoiceClick = () => handleQuery("../list");
 
   return (
     <div>
+      {error && <Alert severity="error">{error}</Alert>}
       <Stack direction="row" spacing={1} sx={{ m: 1 }}>
         <div>
           <TextField
@@ -267,7 +200,6 @@ const QueryInput = () => {
               labelId="label_note"
               id="note_select"
               sx={{ width: 164 }}
-              defaultValue=""
               value={noteOpt}
               label="備註"
               onChange={handleSelNoteOptChange}
@@ -285,7 +217,7 @@ const QueryInput = () => {
       </Stack>
 
       <Stack direction="row" spacing={1}>
-        {/* <Link to="../"> */}
+
         <div>
           <IconButton
             sx={{ m: 1, my: 2 }}
@@ -298,13 +230,13 @@ const QueryInput = () => {
             <KeyboardReturnIcon />
           </IconButton>
         </div>
-        {/* </Link> */}
+
         <div>
           <Button
             sx={{ m: 1, ml: 6, my: 2 }}
             variant="outlined"
             color="primary"
-            onClick={handleQuerySummaryClick}
+            onClick={handleQuerySummaryClick} disabled={pending}
           >
             查詢統計
           </Button>
@@ -314,7 +246,7 @@ const QueryInput = () => {
             sx={{ m: 1, my: 2 }}
             variant="outlined"
             color="primary"
-            onClick={handleQueryInvoiceClick}
+            onClick={handleQueryInvoiceClick} disabled={pending}
           >
             查詢訂單
           </Button>
@@ -325,3 +257,4 @@ const QueryInput = () => {
 };
 
 export default QueryInput;
+
