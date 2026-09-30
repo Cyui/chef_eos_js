@@ -1,0 +1,1 @@
+function e(e,t){if(!Array.isArray(t?.invoiceIds))return e;let n=new Set(t.invoiceIds);return e.filter(e=>n.has(e.id))}export{e as t};
