@@ -26,7 +26,7 @@ const SettingMenu = () => {
   };
 
   const handleReturnClick = () => {
-    navigate(-1);
+    navigate("/", { replace: true });
   };
 
   return (

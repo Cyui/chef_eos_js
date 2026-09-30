@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import FormControl from "@mui/material/FormControl";
@@ -99,10 +100,12 @@ export default function YearSettings() {
           disabled={disabled || !newYear.trim()} onClick={() => addYear()} startIcon={<AddIcon />}>
           新增並切換年度
         </Button>
-        <Button sx={{ py: 2 }} variant="contained" color="primary" size="large" fullWidth
-          disabled={pending} onClick={() => navigate("/setting")} startIcon={<KeyboardReturnIcon />}>
-          返回設定
-        </Button>
+      </Stack>
+      <Stack direction="row" spacing={1} sx={{ mb: 10 }}>
+        <IconButton sx={{ m: 1 }} aria-label="返回設定" color="primary"
+          disabled={pending} onClick={() => navigate("/setting", { replace: true })}>
+          <KeyboardReturnIcon />
+        </IconButton>
       </Stack>
     </Box>
   );
