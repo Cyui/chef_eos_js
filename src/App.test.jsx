@@ -1,15 +1,15 @@
 import * as React from 'react';
 import { afterEach, beforeEach, it, expect, vi } from 'vitest';
 import { render, screen, act, cleanup } from '@testing-library/react';
-const mock = vi.hoisted(() => ({ callback: null, unsubscribe: vi.fn(), load: vi.fn(), initialize: vi.fn(), scope: 0, listeners: new Set() }));
+const mock = vi.hoisted(() => ({ callback: null, unsubscribe: vi.fn(), load: vi.fn(), initialize: vi.fn(), scope: 0, listeners: new Set(), project: '2026y' }));
 vi.mock('./firebase-config', () => ({ app: {} }));
 vi.mock('firebase/auth', () => ({ getAuth: () => ({}), onAuthStateChanged: (_, callback) => { mock.callback = callback; return mock.unsubscribe; } }));
-vi.mock('./model/firebase', () => ({ initializeUser: mock.initialize, loadDashboardData: mock.load, subscribeDataScope: listener => { mock.listeners.add(listener); return () => mock.listeners.delete(listener); }, getDataScope: () => mock.scope }));
+vi.mock('./model/firebase', () => ({ get ProjectSelected() { return mock.project; }, initializeUser: mock.initialize, loadDashboardData: mock.load, subscribeDataScope: listener => { mock.listeners.add(listener); return () => mock.listeners.delete(listener); }, getDataScope: () => mock.scope }));
 vi.mock('./pages/Login', () => ({ default: () => <div>Login page</div> }));
 vi.mock('./pages/Home', () => ({ default: () => <div>Home page</div> }));
 vi.mock('./pages/EditOrder', () => ({ default: () => <div>Edit page</div> }));
 import App from './App';
-beforeEach(() => { vi.clearAllMocks(); mock.scope = 0; mock.listeners.clear(); mock.load.mockResolvedValue([]); window.location.hash = '#/'; });
+beforeEach(() => { vi.clearAllMocks(); mock.scope = 0; mock.project = '2026y'; mock.listeners.clear(); mock.load.mockResolvedValue([]); window.location.hash = '#/'; });
 afterEach(cleanup);
 it('redirects anonymous direct links to login without loading private data', async () => {
   window.location.hash = '#/edit'; render(<App />);
@@ -30,7 +30,7 @@ it('offers retry for a failed initial read', async () => {
   await act(async () => screen.getByRole('button', { name: '重試' }).click());
   expect(await screen.findByText('Home page')).toBeInTheDocument();
 });
-it('removes old-year pages immediately and blocks access if the new-year load fails', async () => {
+it('removes old-project pages immediately and blocks access if the new-project load fails', async () => {
   window.location.hash = '#/edit'; render(<App />);
   await act(async () => mock.callback({ uid: 'u', email: 'u@example.com' }));
   expect(await screen.findByText('Edit page')).toBeInTheDocument();
@@ -38,4 +38,11 @@ it('removes old-year pages immediately and blocks access if the new-year load fa
   await act(async () => { mock.scope += 1; mock.listeners.forEach(listener => listener()); });
   expect(screen.queryByText('Edit page')).not.toBeInTheDocument();
   expect(await screen.findByRole('alert')).toHaveTextContent('資料載入失敗');
+});
+
+it('redirects project data links to home when no project is selected', async () => {
+  mock.project = ''; window.location.hash = '#/edit'; render(<App />);
+  await act(async () => mock.callback({ uid: 'u', email: 'u@example.com' }));
+  expect(await screen.findByText('Home page')).toBeInTheDocument();
+  expect(screen.queryByText('Edit page')).not.toBeInTheDocument();
 });

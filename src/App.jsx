@@ -2,7 +2,7 @@ import * as React from "react";
 import { HashRouter, Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { app } from "./firebase-config";
-import { initializeUser, loadDashboardData, subscribeDataScope, getDataScope } from "./model/firebase";
+import { initializeUser, loadDashboardData, subscribeDataScope, getDataScope, ProjectSelected } from "./model/firebase";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -16,7 +16,7 @@ const InvoiceList = React.lazy(() => import("./pages/InvoiceList"));
 const Query = React.lazy(() => import("./pages/Query"));
 const SettingMenu = React.lazy(() => import("./pages/SettingMenu"));
 const EditMenu = React.lazy(() => import("./pages/EditMenu"));
-const YearSettings = React.lazy(() => import("./pages/YearSettings"));
+const ProjectSettings = React.lazy(() => import("./pages/ProjectSettings"));
 const EditOptions = React.lazy(() => import("./pages/EditOptions"));
 
 function Loading() {
@@ -42,7 +42,11 @@ function DataGate() {
     return () => { active = false; };
   }, [attempt, location.key, location.pathname, scope]);
   if (error) return <Alert severity="error" action={<Button onClick={retry}>重試</Button>}>資料載入失敗，請稍後再試。</Alert>;
-  return readyScope === scope ? <Outlet key={scope} /> : <Loading />;
+  if (readyScope !== scope) return <Loading />;
+  if (!ProjectSelected && !["/", "/setting", "/setting/projects", "/setting/years"].includes(location.pathname)) {
+    return <Navigate to="/" replace />;
+  }
+  return <Outlet key={scope} />;
 }
 
 export default function App() {
@@ -65,7 +69,8 @@ export default function App() {
             <Route path="query" element={<Query />} />
             <Route path="setting" element={<SettingMenu />} />
             <Route path="setting/menu" element={<EditMenu />} />
-            <Route path="setting/years" element={<YearSettings />} />
+            <Route path="setting/projects" element={<ProjectSettings />} />
+            <Route path="setting/years" element={<Navigate to="/setting/projects" replace />} />
             <Route path="setting/options" element={<EditOptions />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

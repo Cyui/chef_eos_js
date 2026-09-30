@@ -70,29 +70,31 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
 
 
-## 年度資料設定
+## 專案設定
 
-每個帳號的年度設定存於 `{email}/user_info`，保留文件原有欄位：
+每個帳號的專案設定存於 `{email}/user_info`，保留文件原有欄位：
 
 ```json
 {
-  "year_selected": "2026y",
-  "years_available": ["2024y", "2026y"]
+  "project_selected": "2026y",
+  "projects_available": ["2024y", "2026y", "夏季活動"]
 }
 ```
 
-- 介面顯示與新增輸入使用 `2026`；資料庫使用 `2026y`。
-- 已有 `year_selected` 時沿用該年度；不會自動加入任何歷史年度。
-- `years_available` 缺少或為空時，設定頁顯示空清單，仍可新增年度。直接修改資料庫後，重新進入年度設定頁會讀取最新清單。
-- `year_selected` 缺少時，依瀏覽器本地年份初始化當年：保留已有菜單，缺少時建立空白菜單，將當年加入可用清單並設為選定年度。
-- 訂單路徑為 `{email}/eos_invioces/{year}y/{docId}`，菜單路徑為 `{email}/eos_menu/{year}y/current`。空年度不建立假訂單。
-- 「設定 → 年度資料設定」可切換或新增年度；新增會將年度加入清單並直接選用，菜單不會從其他年度複製。
-- 已有菜單、訂單或登記的年度不會被覆蓋；介面提供「加入並切換」保留已有資料。
-- 年度初始化／新增以 transaction 同時更新菜單與設定，並以 merge 保留 `exp_date` 等其他欄位。
-- 切換後清空訂單、菜單及編號快取；新年度載入成功前阻擋資料操作。跨年度的舊請求不會覆蓋目前快取。
+- 專案名稱直接對應資料表名稱，介面顯示 `2025y` 就會使用 `2025y`，新增輸入 `2028` 就建立 `2028`。不自動加上或省略 `y`。
+- 專案可使用中文、英文或數字名稱；新增輸入會去除前後空白，名稱需符合 Firestore 集合 ID 限制。
+- 已有 `project_selected` 時沿用該專案，不會自動補歷史專案清單。
+- `projects_available` 缺少或為空時，設定頁顯示空清單，仍可新增專案。直接修改資料庫後，重新進入專案設定頁會讀取最新清單。
+- 未設定 `project_selected` 時，主選單只顯示「設定」與「登出」，設定頁只開放專案設定。登入與讀取清單不會補欄位、建立預設專案或轉換舊欄位；選擇或新增專案後才開放資料操作。
+- 訂單路徑為 `{email}/eos_invioces/{project}/{docId}`，菜單路徑為 `{email}/eos_menu/{project}/current`。空專案不建立假訂單。
+- 「設定 → 專案設定」可切換或新增專案；新增會加入清單並直接選用，菜單不會從其他專案複製。
+- 已有菜單、訂單或登記的專案不會被覆蓋；介面提供「加入並切換」保留已有資料。
+- 新增以 transaction 同時更新菜單與設定，並以 merge 保留 `exp_date` 等其他欄位。
+- 切換後清空訂單、菜單及編號快取；新專案載入成功前阻擋資料操作。舊專案的請求不會覆蓋目前快取。
+- 設定只讀取 `project_selected`／`projects_available`，不讀取或轉換舊年度欄位。既有帳號可自行在資料庫補上新欄位，完整專案名稱保持與既有資料表一致，例如 `2025y`，不需搬移訂單或菜單。
+- 設定頁路徑改為 `#/setting/projects`；原本 `#/setting/years` 連結會轉到新頁面。
 
-合併前請以測試帳號驗收：未設定年度的登入、空年度清單、既有年度切換、新增年度、已有年度的加入，以及資料庫權限拒絕時的錯誤處理。
-
+合併前請以測試帳號驗收：舊欄位尚未手動補入新欄位的登入、未設定專案的登入、空專案清單、完整名稱顯示、既有專案切換、新增中文名稱專案、已有專案的加入，以及資料庫權限拒絕時的錯誤處理。
 
 ## 正式版與測試版部署
 

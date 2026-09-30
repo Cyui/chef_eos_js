@@ -7,11 +7,10 @@ vi.mock('firebase/firestore', () => ({
   query: (...args) => ({ args }), orderBy: (...args) => ({ args }), limit: (...args) => ({ args }),
   getDocs: mock.getDocs, getDoc: mock.getDoc, setDoc: mock.setDoc, updateDoc: mock.updateDoc, deleteDoc: mock.deleteDoc,
 }));
-vi.mock('./years', () => ({
-  ensureYearSelection: vi.fn().mockResolvedValue({ year_selected: '2025y', years_available: ['2025y'] }),
-  readYearSettings: vi.fn().mockResolvedValue({ year_selected: '2025y', years_available: ['2025y'] }),
-  selectYear: vi.fn(async (_, year) => ({ year_selected: year, years_available: ['2025y', '2026y'] })),
-  createYear: vi.fn(async (_, year) => ({ year_selected: year + 'y', years_available: ['2025y', year + 'y'] })),
+vi.mock('./projects', () => ({
+  readProjectSettings: vi.fn().mockResolvedValue({ project_selected: '2025y', projects_available: ['2025y'] }),
+  selectProject: vi.fn(async (_, project) => ({ project_selected: project, projects_available: ['2025y', '2026y'] })),
+  createProject: vi.fn(async (_, project) => ({ project_selected: project, projects_available: ['2025y', project] })),
 }));
 import * as firebase from './firebase';
 import { CInvoice } from './invoice';
@@ -51,36 +50,56 @@ it('rejects unauthenticated access and preserves cache for repeat auth callbacks
   const item = new CInvoice(); firebase.updateInvoices(item); firebase.initializeUser(owner); expect(firebase.Invoices).toEqual([item]);
   mock.auth.currentUser = null; firebase.initializeUser(null); expect(() => firebase.pullAllInvoiceFromFirebase()).toThrow('Authentication required');
 });
-it('isolates pending reads and writes across year switches', async () => {
+it('isolates pending reads and writes across project switches', async () => {
   let finishRead; mock.getDocs.mockImplementationOnce(() => new Promise(resolve => { finishRead = resolve; }));
   const read = firebase.pullAllInvoiceFromFirebase();
   let finishWrite; mock.setDoc.mockImplementationOnce(() => new Promise(resolve => { finishWrite = resolve; }));
-  const item = new CInvoice(); item.id = 'old-year'; const write = firebase.pushInvoiceToFirebase(item);
-  await firebase.changeSelectedYear('2026y');
+  const item = new CInvoice(); item.id = 'old-project'; const write = firebase.pushInvoiceToFirebase(item);
+  await firebase.changeSelectedProject('2026y');
   expect(firebase.Invoices).toEqual([]); expect(firebase.LastInvoiceNO).toBe(0); expect(firebase.Menu.products).toEqual([]);
-  await expect(firebase.pushInvoiceToFirebase(item)).rejects.toThrow('Year data is not ready');
+  await expect(firebase.pushInvoiceToFirebase(item)).rejects.toThrow('Project data is not ready');
   const completed = Promise.allSettled([read, write]);
   finishRead({ docs: [{ id: 'old-doc', data: () => item }] }); finishWrite();
   expect((await completed).map(result => result.status)).toEqual(['rejected', 'rejected']);
   expect(firebase.Invoices).toEqual([]); expect(item.doc).toBe('');
   expect(mock.setDoc.mock.calls[0][0].args[0].args).toContain('2025y');
-  expect(firebase.YearSelected).toBe('2026y');
+  expect(firebase.ProjectSelected).toBe('2026y');
 });
-it('routes every data operation to the selected year after loading', async () => {
+it('routes every data operation to the selected project after loading', async () => {
   // Stub the next bootstrap read as if the persisted setting was changed.
-  const years = await import('./years');
-  years.ensureYearSelection.mockResolvedValueOnce({ year_selected: '2028y', years_available: ['2028y'] });
+  const projects = await import('./projects');
+  projects.readProjectSettings.mockResolvedValueOnce({ project_selected: '夏季活動', projects_available: ['夏季活動'] });
   await firebase.loadDashboardData(); vi.clearAllMocks();
-  const item = new CInvoice(); item.id = 'new-year';
+  const item = new CInvoice(); item.id = 'new-project';
   await firebase.pushInvoiceToFirebase(item); await firebase.updateInvoiceToFirebase(item, 'doc');
   await firebase.pushMenuToFirebase({ products: [], options: [] }); await firebase.deleteInvoiceFromFirebase('doc');
   const invoicePath = mock.setDoc.mock.calls[0][0].args[0].args;
-  expect(invoicePath).toContain('2028y'); expect(mock.setDoc.mock.calls[1][0].args).toContain('2028y');
-  expect(mock.updateDoc.mock.calls[0][0].args[0].args).toContain('2028y'); expect(mock.deleteDoc.mock.calls[0][0].args[0].args).toContain('2028y');
+  expect(invoicePath).toContain('夏季活動'); expect(mock.setDoc.mock.calls[1][0].args).toContain('夏季活動');
+  expect(mock.updateDoc.mock.calls[0][0].args[0].args).toContain('夏季活動'); expect(mock.deleteDoc.mock.calls[0][0].args[0].args).toContain('夏季活動');
 });
-it('blocks writes when the active-year dashboard load fails', async () => {
+it('blocks writes when the active-project dashboard load fails', async () => {
   mock.getDoc.mockRejectedValueOnce(new Error('permission-denied'));
   await expect(firebase.loadDashboardData()).rejects.toThrow('permission-denied');
-  await expect(firebase.pushMenuToFirebase({ products: [], options: [] })).rejects.toThrow('Year data is not ready');
+  await expect(firebase.pushMenuToFirebase({ products: [], options: [] })).rejects.toThrow('Project data is not ready');
   expect(mock.setDoc).not.toHaveBeenCalled();
+});
+
+it('loads an unconfigured account without reading project data or writing configuration', async () => {
+  const projects = await import('./projects');
+  projects.readProjectSettings.mockResolvedValueOnce({ project_selected: '', projects_available: [] });
+  await firebase.loadDashboardData();
+  expect(firebase.ProjectSelected).toBe('');
+  expect(mock.getDocs).not.toHaveBeenCalled(); expect(mock.getDoc).not.toHaveBeenCalled();
+  expect(mock.setDoc).not.toHaveBeenCalled();
+  await expect(firebase.pushMenuToFirebase({ products: [], options: [] })).rejects.toThrow();
+});
+it('allows explicit creation and selection before an account has a selected project', async () => {
+  const projects = await import('./projects');
+  projects.readProjectSettings.mockResolvedValueOnce({ project_selected: '', projects_available: ['夏季活動'] });
+  await firebase.loadDashboardData();
+  await firebase.changeSelectedProject('夏季活動'); expect(projects.selectProject).toHaveBeenCalledWith(owner.email, '夏季活動');
+  projects.readProjectSettings.mockResolvedValueOnce({ project_selected: '', projects_available: [] });
+  await firebase.loadDashboardData();
+  await firebase.addProject('new-project'); expect(projects.createProject).toHaveBeenCalledWith(owner.email, 'new-project', undefined);
+  expect(firebase.ProjectSelected).toBe('new-project');
 });

@@ -6,12 +6,12 @@ import {
 } from "firebase/firestore";
 import { invoiceFromObject } from "./invoice";
 import { CMenu, menuFromObject } from "./chefmenu";
-import { ensureYearSelection, readYearSettings, selectYear, createYear } from "./years";
+import { readProjectSettings, selectProject, createProject } from "./projects";
 
 export const db = getFirestore(app);
 const auth = getAuth(app);
-export let YearSelected = "";
-export let YearsAvailable = [];
+export let ProjectSelected = "";
+export let ProjectsAvailable = [];
 export let Invoices = [];
 export let LastInvoiceNO = 0;
 export let Menu = new CMenu();
@@ -30,7 +30,7 @@ export function subscribeDataScope(listener) {
 export function getDataScope() { return session; }
 function notifyScope() { scopeListeners.forEach((listener) => listener()); }
 
-function clearYearData() {
+function clearProjectData() {
   dataReady = false;
   Invoices = [];
   LastInvoiceNO = 0;
@@ -40,11 +40,11 @@ function clearYearData() {
 }
 
 function activateSettings(settings) {
-  YearsAvailable = settings.years_available;
-  if (YearSelected !== settings.year_selected) {
-    YearSelected = settings.year_selected;
+  ProjectsAvailable = settings.projects_available;
+  if (ProjectSelected !== settings.project_selected) {
+    ProjectSelected = settings.project_selected;
     session += 1;
-    clearYearData();
+    clearProjectData();
     notifyScope();
   }
 }
@@ -56,18 +56,18 @@ export function initializeUser(user) {
   userId = nextId;
   session += 1;
   Mail = user?.email || "";
-  YearSelected = "";
-  YearsAvailable = [];
-  clearYearData();
+  ProjectSelected = "";
+  ProjectsAvailable = [];
+  clearProjectData();
   notifyScope();
 }
 
-function currentSession(requireYear = true) {
+function currentSession(requireProject = true) {
   if (!auth.currentUser || !Mail || auth.currentUser.email !== Mail) {
     throw new Error("Authentication required");
   }
-  if (requireYear && !YearSelected) throw new Error("Year is not initialized");
-  return { email: Mail, year: YearSelected, version: session };
+  if (requireProject && !ProjectSelected) throw new Error("Project is not initialized");
+  return { email: Mail, project: ProjectSelected, version: session };
 }
 
 function isCurrent({ email, version }) {
@@ -78,8 +78,8 @@ function assertCurrent(owner) {
   if (!isCurrent(owner)) throw new Error("Data scope changed");
 }
 
-function invoiceCollection(email, year) {
-  return collection(db, email, "eos_invioces", year);
+function invoiceCollection(email, project) {
+  return collection(db, email, "eos_invioces", project);
 }
 
 // Class instances and optional undefined fields need plain Firestore data.
@@ -99,9 +99,9 @@ export function logOut() {
 }
 
 export async function pushInvoiceToFirebase(invoice) {
-  if (!dataReady) throw new Error("Year data is not ready");
+  if (!dataReady) throw new Error("Project data is not ready");
   const owner = currentSession();
-  const ref = doc(invoiceCollection(owner.email, owner.year));
+  const ref = doc(invoiceCollection(owner.email, owner.project));
   const saved = invoiceFromObject({ ...invoice, doc: ref.id });
   // Save the generated document ID in the same write, rather than a second update.
   await setDoc(ref, plainData(saved));
@@ -113,19 +113,19 @@ export async function pushInvoiceToFirebase(invoice) {
 }
 
 export async function pushMenuToFirebase(menu) {
-  if (!dataReady) throw new Error("Year data is not ready");
+  if (!dataReady) throw new Error("Project data is not ready");
   const owner = currentSession();
   const data = plainData(menu);
-  await setDoc(doc(db, owner.email, "eos_menu", owner.year, "current"), data);
+  await setDoc(doc(db, owner.email, "eos_menu", owner.project, "current"), data);
   assertCurrent(owner);
   Menu = menuFromObject(data);
 }
 
 export async function updateInvoiceToFirebase(invoice, docid) {
-  if (!dataReady) throw new Error("Year data is not ready");
+  if (!dataReady) throw new Error("Project data is not ready");
   const owner = currentSession();
   const saved = invoiceFromObject({ ...invoice, doc: docid });
-  await updateDoc(doc(invoiceCollection(owner.email, owner.year), docid), plainData(saved));
+  await updateDoc(doc(invoiceCollection(owner.email, owner.project), docid), plainData(saved));
   assertCurrent(owner);
   updateInvoices(saved);
   return saved;
@@ -135,7 +135,7 @@ export function pullAllInvoiceFromFirebase() {
   const owner = currentSession();
   if (invoiceRequest?.version === owner.version) return invoiceRequest.promise;
   const promise = (async () => {
-    const snapshot = await getDocs(query(invoiceCollection(owner.email, owner.year), orderBy("info.sn", "desc")));
+    const snapshot = await getDocs(query(invoiceCollection(owner.email, owner.project), orderBy("info.sn", "desc")));
     const invoices = snapshot.docs.map((item) => invoiceFromObject({ ...item.data(), doc: item.id }));
     assertCurrent(owner);
     Invoices = invoices;
@@ -149,7 +149,7 @@ export function pullAllInvoiceFromFirebase() {
 
 export async function pullMenuFromFirebase() {
   const owner = currentSession();
-  const snapshot = await getDoc(doc(db, owner.email, "eos_menu", owner.year, "current"));
+  const snapshot = await getDoc(doc(db, owner.email, "eos_menu", owner.project, "current"));
   const menu = snapshot.exists() ? menuFromObject(snapshot.data()) : new CMenu();
   assertCurrent(owner);
   Menu = menu;
@@ -157,16 +157,16 @@ export async function pullMenuFromFirebase() {
 }
 
 export async function deleteInvoiceFromFirebase(docid) {
-  if (!dataReady) throw new Error("Year data is not ready");
+  if (!dataReady) throw new Error("Project data is not ready");
   const owner = currentSession();
-  await deleteDoc(doc(invoiceCollection(owner.email, owner.year), docid));
+  await deleteDoc(doc(invoiceCollection(owner.email, owner.project), docid));
   assertCurrent(owner);
   Invoices = Invoices.filter((item) => item.doc !== docid);
 }
 
 export async function getLastInvoiceFromFirebase() {
   const owner = currentSession();
-  const snapshot = await getDocs(query(invoiceCollection(owner.email, owner.year), orderBy("no", "desc"), limit(1)));
+  const snapshot = await getDocs(query(invoiceCollection(owner.email, owner.project), orderBy("no", "desc"), limit(1)));
   const no = snapshot.docs[0]?.data().no || 0;
   assertCurrent(owner);
   LastInvoiceNO = no;
@@ -178,10 +178,11 @@ export function loadDashboardData() {
   if (dashboardRequest?.version === owner.version) return dashboardRequest.promise;
   dataReady = false;
   const promise = (async () => {
-    const settings = await ensureYearSelection(owner.email);
+    const settings = await readProjectSettings(owner.email);
     if (!isCurrent(owner)) throw new Error("Data scope changed");
     activateSettings(settings);
     dashboardRequest = { version: session, promise };
+    if (!ProjectSelected) return;
     const active = currentSession();
     await Promise.all([
       pullAllInvoiceFromFirebase(), getLastInvoiceFromFirebase(), pullMenuFromFirebase(),
@@ -195,26 +196,26 @@ export function loadDashboardData() {
   return promise;
 }
 
-export async function refreshYearSettings() {
+export async function refreshProjectSettings() {
   const owner = currentSession(false);
-  const settings = await readYearSettings(owner.email);
+  const settings = await readProjectSettings(owner.email);
   if (!isCurrent(owner)) throw new Error("Data scope changed");
   // Refresh the list only; changing selection must pass through the data gate.
-  YearsAvailable = settings.years_available;
-  return { ...settings, year_selected: YearSelected };
+  ProjectsAvailable = settings.projects_available;
+  return { ...settings, project_selected: ProjectSelected };
 }
 
-export async function changeSelectedYear(year) {
-  const owner = currentSession();
-  const settings = await selectYear(owner.email, year);
+export async function changeSelectedProject(project) {
+  const owner = currentSession(false);
+  const settings = await selectProject(owner.email, project);
   if (!isCurrent(owner)) throw new Error("Data scope changed");
   activateSettings(settings);
   return settings;
 }
 
-export async function addYear(value, options) {
-  const owner = currentSession();
-  const settings = await createYear(owner.email, value, options);
+export async function addProject(value, options) {
+  const owner = currentSession(false);
+  const settings = await createProject(owner.email, value, options);
   if (!isCurrent(owner)) throw new Error("Data scope changed");
   activateSettings(settings);
   return settings;
