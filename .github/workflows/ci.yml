@@ -3,7 +3,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [refactor/performance-and-safety]
+    branches: [refactor/performance-and-safety, feature/year-selection]
   workflow_dispatch:
 permissions:
   contents: read
