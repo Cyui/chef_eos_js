@@ -34,18 +34,20 @@ const auth = getAuth(app);
 
 export default function SignIn() {
   const navigate = useNavigate(); //取得 navigate
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [loginError, setLoginError] = React.useState("");
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const emailInputRef = React.useRef(null);
   const handleSubmit = (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    //console.log({
-    //  email: data.get('email'),
-    //  password: data.get('password'),
-    //});
+    setLoginError("");
+    setIsSubmitting(true);
 
     signInWithEmailAndPassword(
       auth,
-      data.get("email").toString(),
-      data.get("password").toString()
+      email,
+      password
     )
       .then((userCredential) => {
         // Signed in
@@ -54,10 +56,14 @@ export default function SignIn() {
         navigate("/"); // navigate 到首頁
         // ...
       })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log("error", error);
+      .catch(() => {
+        setEmail("");
+        setPassword("");
+        setLoginError("登入失敗，請確認帳號與密碼後再試一次。");
+        emailInputRef.current?.focus();
+      })
+      .finally(() => {
+        setIsSubmitting(false);
       });
   };
 
@@ -87,6 +93,10 @@ export default function SignIn() {
               id="email"
               label="Email Address"
               name="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              inputRef={emailInputRef}
+              disabled={isSubmitting}
               autoComplete="email"
               autoFocus
             />
@@ -98,13 +108,21 @@ export default function SignIn() {
               label="Password"
               type="password"
               id="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              disabled={isSubmitting}
               autoComplete="current-password"
             />
             <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
             />
-            <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+            {loginError && (
+              <Typography role="alert" color="error" variant="body2" sx={{ mt: 1 }}>
+                {loginError}
+              </Typography>
+            )}
+            <Button type="submit" fullWidth variant="contained" disabled={isSubmitting} sx={{ mt: 3, mb: 2 }}>
               Sign In
             </Button>
             <Grid container>
