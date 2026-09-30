@@ -1,0 +1,1 @@
+import{G as e,K as t}from"./CircularProgress-BFRjJ0FL.js";function n(e){return t(`MuiListItemText`,e)}var r=e(`MuiListItemText`,[`root`,`multiline`,`dense`,`inset`,`primary`,`secondary`]);export{r as n,n as t};
