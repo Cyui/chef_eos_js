@@ -84,10 +84,11 @@ it('blocks writes when the active-project dashboard load fails', async () => {
   expect(mock.setDoc).not.toHaveBeenCalled();
 });
 
-it('loads an unconfigured account without reading project data or writing configuration', async () => {
+it('requests user_info initialization without reading project data or writing project configuration', async () => {
   const projects = await import('./projects');
   projects.readProjectSettings.mockResolvedValueOnce({ project_selected: '', projects_available: [] });
   await firebase.loadDashboardData();
+  expect(projects.readProjectSettings).toHaveBeenCalledWith(owner.email, { initializeIfMissing: true });
   expect(firebase.ProjectSelected).toBe('');
   expect(mock.getDocs).not.toHaveBeenCalled(); expect(mock.getDoc).not.toHaveBeenCalled();
   expect(mock.setDoc).not.toHaveBeenCalled();

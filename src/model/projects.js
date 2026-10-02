@@ -36,14 +36,25 @@ function assertOwner(email) {
 function userRef(email) { return doc(db, email, "user_info"); }
 function menuRef(email, project) { return doc(db, email, "eos_menu", project, "current"); }
 
-async function readInfo(email) {
+async function readInfo(email, initializeIfMissing) {
   assertOwner(email);
   const snapshot = await getDoc(userRef(email));
-  return snapshot.exists() ? snapshot.data() : {};
+  if (snapshot.exists()) return snapshot.data();
+  if (!initializeIfMissing) return {};
+  // Recheck inside the transaction so another login cannot be overwritten.
+  return runTransaction(db, async (transaction) => {
+    assertOwner(email);
+    const ref = userRef(email);
+    const current = await transaction.get(ref);
+    if (current.exists()) return current.data();
+    const data = { exp_date: "-" };
+    transaction.set(ref, data);
+    return data;
+  });
 }
 
-export async function readProjectSettings(email) {
-  return settingsFrom(await readInfo(email));
+export async function readProjectSettings(email, { initializeIfMissing = false } = {}) {
+  return settingsFrom(await readInfo(email, initializeIfMissing));
 }
 
 export async function selectProject(email, project) {

@@ -24,6 +24,42 @@ beforeEach(() => {
   });
 });
 describe('project settings', () => {
+  it('initializes a missing user_info with only exp_date during login', async () => {
+    expect(await readProjectSettings(email, { initializeIfMissing: true })).toEqual({ project_selected: '', projects_available: [] });
+    expect(mock.docs.get(info)).toEqual({ exp_date: '-' });
+    expect(mock.writes).toEqual([{ path: info, data: { exp_date: '-' }, options: undefined }]);
+    await readProjectSettings(email, { initializeIfMissing: true });
+    expect(mock.writes).toHaveLength(1);
+  });
+  it('preserves every existing user_info, including documents without exp_date', async () => {
+    for (const data of [{}, { exp_date: '2027-01-01', project_selected: '2025y', projects_available: ['2025y'] }, { projects_available: ['summer'] }]) {
+      mock.docs.set(info, data);
+      await readProjectSettings(email, { initializeIfMissing: true });
+      expect(mock.docs.get(info)).toEqual(data);
+    }
+    expect(mock.runTransaction).not.toHaveBeenCalled();
+    expect(mock.writes).toEqual([]);
+  });
+  it('preserves user_info created by another login before the transaction', async () => {
+    const data = { exp_date: '2027-01-01', project_selected: 'summer', projects_available: ['summer'] };
+    mock.getDoc.mockImplementationOnce(async () => {
+      mock.docs.set(info, data);
+      return { exists: () => false };
+    });
+    expect(await readProjectSettings(email, { initializeIfMissing: true })).toEqual({ project_selected: 'summer', projects_available: ['summer'] });
+    expect(mock.docs.get(info)).toEqual(data);
+    expect(mock.writes).toEqual([]);
+  });
+  it('does not initialize missing user_info on a settings-only read or a failed login read', async () => {
+    await readProjectSettings(email);
+    expect(mock.runTransaction).not.toHaveBeenCalled();
+    mock.getDoc.mockRejectedValueOnce(new Error('permission-denied'));
+    await expect(readProjectSettings(email, { initializeIfMissing: true })).rejects.toThrow('permission-denied');
+    expect(mock.writes).toEqual([]);
+    mock.runTransaction.mockRejectedValueOnce(new Error('write-denied'));
+    await expect(readProjectSettings(email, { initializeIfMissing: true })).rejects.toThrow('write-denied');
+    expect(mock.docs.has(info)).toBe(false);
+  });
   it('returns an empty configuration without writing fields or reading menus', async () => {
     mock.docs.set(info, { exp_date: '-', year_selected: '2025y', years_available: ['2025y'] });
     expect(await readProjectSettings(email)).toEqual({ project_selected: '', projects_available: [] });

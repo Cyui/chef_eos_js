@@ -178,7 +178,7 @@ export function loadDashboardData() {
   if (dashboardRequest?.version === owner.version) return dashboardRequest.promise;
   dataReady = false;
   const promise = (async () => {
-    const settings = await readProjectSettings(owner.email);
+    const settings = await readProjectSettings(owner.email, { initializeIfMissing: true });
     if (!isCurrent(owner)) throw new Error("Data scope changed");
     activateSettings(settings);
     dashboardRequest = { version: session, promise };
