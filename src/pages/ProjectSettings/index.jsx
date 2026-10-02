@@ -13,6 +13,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Alert from "@mui/material/Alert";
 import FolderIcon from "@mui/icons-material/Folder";
 import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import * as firebase from "../../model/firebase";
 import { projectKey } from "../../model/projects";
@@ -101,10 +102,18 @@ export default function ProjectSettings() {
         </Button>
       </Stack>
       <Stack direction="row" spacing={1} sx={{ mb: 10 }}>
-        <IconButton sx={{ m: 1 }} aria-label="返回設定" color="primary"
-          disabled={pending} onClick={() => navigate("/setting", { replace: true })}>
-          <KeyboardReturnIcon />
-        </IconButton>
+        <div>
+          <IconButton sx={{ m: 1 }} aria-label="返回設定" color="primary"
+            disabled={pending} onClick={() => navigate("/setting", { replace: true })}>
+            <KeyboardReturnIcon />
+          </IconButton>
+        </div>
+        <div>
+          <IconButton sx={{ m: 1 }} aria-label="cancel" color="error"
+            disabled={pending} onClick={() => navigate("/", { replace: true })}>
+            <CloseIcon />
+          </IconButton>
+        </div>
       </Stack>
     </Box>
   );
